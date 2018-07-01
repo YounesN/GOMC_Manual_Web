@@ -1,0 +1,357 @@
+Input File Formats
+==================
+In order to run simulation in GOMC, the following files need to be provided:
+
+- GOMC executable
+- PDB file(s)
+- PSF file(s)
+- Parameter file
+- Input file "NAME.conf" (proprietary control file)
+
+PDB File
+--------
+GOMC requires only one PDB file for NVT and NPT ensembles. However, GOMC requires two PDB files for GEMC and GCMC ensembles.
+
+What is PDB file
+^^^^^^^^^^^^^^^^
+The term PDB can refer to the Protein Data Bank (http://www.rcsb.org/pdb/), to a data file provided there, or to any file following the PDB format. Files in the PDB include various information such as the name of the compound, the ATOM and HETATM records containing the coordinates of the molecules, and etc. PDB widely used by NAMD, GROMACS, CHARMM, ACEMD, and Amber. GOMC ignore everything in a PDB file except for the REMARK, CRYST1, ATOM, and END records. An overview of the PDB standard can be found here:
+
+http://www.wwpdb.org/documentation/file-format-content/format33/sect2.html#HEADER 
+http://www.wwpdb.org/documentation/file-format-content/format33/sect8.html#CRYST1 
+http://www.wwpdb.org/documentation/file-format-content/format33/sect9.html#ATOM
+
+PDB contains foure major parts; ``REMARK``, ``CRYST1``, ``ATOM``, and ``END``. Here is the definition of each field and how GOMC is using them to get the information it requires.
+
+- ``REMARK``:
+  This header records present experimental  details, annotations, comments, and information not included in other records (http://www.wwpdb.org/documentation/file-format-content/format33/ sect2.html#HEADER). However, GOMC uses this header to print simulation informations.
+
+  - **Max Displacement** (Å)
+  - **Max Rotation** (Degree)
+  - **Max volume exchange** (:math:`Å^3`)
+  - **Monte Carlo Steps** (MC)
+
+- ``CRYST1``:
+  This header records the unit cell dimension parameters (http://www.wwpdb.org/documentation/file-format-content/format33/sect8.html#CRYST1).
+
+  - **Lattice constant**: a,b,c (Å)
+  - **Lattice angles**: :math:`\alpha, \beta, \gamma` (Degree)
+
+- ``ATOM``:
+  The ATOM records present the atomic coordinates for standard amino acids and nucleotides. They also present the occupancy and temperature factor for each atom (http://www.wwpdb.org/documentation/file-format-content/format33/sect9.html#ATOM).
+
+  - **ATOM**: Record name
+  - **serial**: Atom serial number.
+  - **name**: Atom name.
+  - **resName**: Residue name.
+  - **chainID**: Chain identifier.
+  - **resSeq**: Residue sequence number.
+  - **x**: Coordinates for X (Å).
+  - **y**: Coordinates for Y (Å).
+  - **z**: Coordinates for Z (Å).
+  - **occupancy**: GOMC uses to define which atoms belong to which box.
+  - **beta**: Beta or Temperature factor. GOMC uses this value to define the mobility of the atoms. element: Element symbol.
+
+- ``END``:
+  A frame in the PDB file is terminated with the keyword.
+
+Here are the PDB output of GOMC for the first molecule of isobutane:
+
+.. code-block:: text
+
+  REMARK       GOMC    122.790    3.14159    3439.817     1000000
+  CRYST1     35.245     35.245     35.245       90.00       90.00     90.00
+  ATOM            1         C1        ISB           1       0.911    -0.313    0.000     0.00     0.00        C
+  ATOM            2         C1        ISB           1       1.424    -1.765    0.000     0.00     0.00        C
+  ATOM            3         C1        ISB           1      -0.629    -0.313    0.000     0.00     0.00        C
+  ATOM            4         C1        ISB           1       1.424     0.413   -1.257     0.00     0.00        C
+  END
+
+The fields seen here in order from left to right are the record type, atom ID, atom name, residue name, residue ID, x, y, and z coordinates, occupancy, temperature factor (called beta), and segment name.
+
+The atom name is "C1" and residue name is "ISB". The PSF file (next section) contains a lookup table of atoms. These contain the atom name from the PDB and the name of the atom kind in the parameter file it corresponds to. As multiple different atom names will all correspond to the same parameter, these can be viewed "atom aliases" of sorts. The chain letter (in this case ‘A’) is sometimes used when packing a number of PDBs into a single PDB file.
+
+.. Important::
+
+  - VMD requires a constant number of ATOMs in a multi-frame PDB (multiple records terminated by "END" in a single file). To compensate for this, all atoms from all boxes in the system are written to the output PDBs of this code.
+  - For atoms not currently in a box, the coordinates are set to ``< 0.00, 0.00, 0.00 >``. The occupancy is commonly just set to "1.00" and is left unused by many codes. We recycle this legacy parameter by using it to denote, in our output PDBs, the box a molecule is in (box 0 occupancy=0.00 ; box 1 occupancy=1.00)
+  - The beta value in GOMC code is used to define the mobility of the molecule.
+
+    - Beta = 0.00: molecule can move and transfer within and between boxes.
+    - Beta = 1.00: molecule is fixed in its position.
+    - Beta = 2.00: molecule can move within the box but cannot be transferred between boxes.
+
+Generating PDB file
+^^^^^^^^^^^^^^^^^^^
+
+With that overview of the format in mind, the following steps describe how a PDB file is typically built.
+
+1. A single molecule PDB is obtained. In this example, the QM software package Gaussian was used to draw the molecule, which was then edited by hand to adhere to the PDB spec properly. The end result is a PDB for a single molecule:
+
+  .. code-block:: text
+
+    REMARK   1 File created by GaussView 5.0.8
+    ATOM     1  C1   ISB  1   0.911  -0.313    0.000  C
+    ATOM     2  C1   ISB  1   1.424  -1.765    0.000  C
+    ATOM     3  C1   ISB  1  -0.629  -0.313    0.000  C
+    ATOM     4  C1   ISB  1   1.424   0.413   -1.257  C
+    END
+
+2. Next, packings are calculated to place the simulation in a region of vapor-liquid coexistence. There are a couple of ways to do this in Gibbs ensemble:
+
+  - Pack both boxes to a single middle density, which is an average of the liquid and vapor densities.
+  - Same as previous method, but add a modest amount to axis of one box (e.g. 10-30 A). This technique can be handy in the constant pressure Gibbs ensemble.
+  - Pack one box to the predicted liquid density and the other to the vapor density.
+
+  A good reference for getting the information needed to estimate packing is the NIST Web Book database of pure compounds:
+  
+  http://webbook.nist.gov/chemistry/
+
+3. After packing is determined, a basic pack can be performed with a Packmol script. Here is one example:
+
+  .. code-block:: text
+
+    tolerance 3.0
+    filetype pdb
+    output STEP2 ISB packed BOX 0.pdb
+    structure isobutane.pdb
+    number 1000
+    inside cube 0.1 0.1 0.1 70.20
+    end structure
+
+  Copy the above text into "pack_isobutane.inp" file, save it and run the script by typing the following line into the terminal:
+
+  .. code-block:: bash
+
+    $ ./packmol < pack_isobutane.inp
+
+PSF File
+--------
+
+GOMC requires only one PSF file for NVT and NPT ensembles. However, GOMC requires two PSF files for GEMC and GCMC ensembles.
+
+What is PSF file
+^^^^^^^^^^^^^^^^
+
+Protein structure file (PSF), contains all of the molecule-specific information needed to apply a particular force field to a molecular system. The CHARMM force field is divided into a topology file, which is needed to generate the PSF file, and a parameter file, which supplies specific numerical values for the generic CHARMM potential function. The topology file defines the atom types used in the force field; the atom names, types, bonds, and partial charges of each residue type; and any patches necessary to link or otherwise mutate these basic residues. The parameter file provides a mapping between bonded and nonbonded interactions involving the various combinations of atom types found in the topology file and specific spring constants and similar parameters for all of the bond, angle, dihedral, improper, and van der Waals terms in the CHARMM potential function. PSF file widely used by by NAMD, CHARMM, and X-PLOR.
+
+The PSF file contains six main sections: ``remarks``, ``atoms``, ``bonds``, ``angles``, ``dihedrals``, and ``impropers`` (dihedral force terms used to maintain planarity). Each section starts with a specific header described bellow:
+
+- ``NTITLE``: remarks on the file.
+  The following is taken from a PSF file for isobutane:
+
+  .. code-block:: text
+
+    PSF
+          3  !NTITLE
+    REMARKS  original generated structure x-plor psf file
+    REMARKS  topology ./Top Branched Alkanes.inp
+    REMARKS  segment ISB { first NONE; last NONE; auto angles dihedrals }
+
+- ``NATOM``: Defines the atom names, types, and partial charges of each residue type.
+
+  .. code-block:: text
+
+    atom ID
+    segment name
+    residue ID
+    residue name
+    atom name
+    atom type
+    atom charge
+    atom mass
+
+  The following is taken from a PSF file for isobutane:
+
+  .. code-block:: text
+
+    4000 !NATOM
+    1    ISB  1  ISB    C1    CH1    0.000000   13.0190  0
+    2    ISB  1  ISB    C2    CH3    0.000000   15.0350  0
+    3    ISB  1  ISB    C3    CH3    0.000000   15.0350  0
+    4    ISB  1  ISB    C4    CH3    0.000000   15.0350  0
+    5    ISB  2  ISB    C1    CH1    0.000000   13.0190  0
+    6    ISB  2  ISB    C2    CH3    0.000000   15.0350  0
+    7    ISB  2  ISB    C3    CH3    0.000000   15.0350  0
+    8    ISB  2  ISB    C4    CH3    0.000000   15.0350  0
+
+  The fields in the atom section, from left to right are atom ID, segment name, residue ID, residue name, atom name, atom type, charge, mass, and an unused 0.
+
+- ``NBOND``: The covalent bond section lists four pairs of atoms per line. The following is taken from a PSF file for isobutane:
+
+  .. code-block:: text
+
+    3000   !BOND:     bonds
+       1   2          1  3  1  4  5  6
+       5   7          5  8
+
+- ``NTHETA``: The angle section lists three triples of atoms per line. The following is taken from a PSF file for isobutane:
+
+  .. code-block:: text
+
+    3000   !NTHETA:   angles
+       2   1          4  2  1  3  3  1  4
+       6   5          8  6  5  7  7  5  8
+
+- ``NPHI``: The dihedral sections list two quadruples of atoms per line.
+
+- ``NIMPHI``: The improper sections list two quadruples of atoms per line. GOMC currently does not support improper. For the molecules without dihedral or improper, PDF file look like the following:
+
+  .. code-block:: text
+
+    0   !NPHI: dihedrals
+    0   !NIMPHI: impropers
+
+- (other sections such as cross terms)
+
+.. Important::
+
+  - The PSF file format is a highly redundant file format. It repeats identical topology of thousands of molecules of a common kind in some cases. GOMC follows the same approach as NAMD, allowing this excess information externally and compiling it in the code.
+  - Other sections (e.g. cross terms) contain unsupported or legacy parameters and are ignored.
+  - Following the restrictions of VMD, the order of the PSF atoms must match the order in the.
+  - Improper entries are read and stored, but are not currently used. Support will eventually be added for this.
+
+Generating PSF file
+^^^^^^^^^^^^^^^^^^^
+
+The PSF file is typically generated using PSFGen. It is convenient to make a script, such as the example below, to do this:
+
+.. code-block::text
+
+  psfgen << ENDMOL
+  topology ./Top branched Alaknes.inp segment ISB{
+    pdb ./STEP2 ISB packed BOX 0.pdb
+    first none
+    last none
+  }
+
+  coordpdb ./STEP2 ISB packed BOX 0.pdb ISB
+
+  writepsf ./STEP3 START ISB sys BOX 0.psf
+  writepdb ./STEP3 START ISB sys BOX 0.pdb
+
+Typically, one script is run per box to generate a finalized PDB/PSF for that box. The script requires one additional file, the NAMD-style topology file. While GOMC does not directly read or interact with this file, it’s typically used to generate the PSF and, hence, is considered one of the integral file types. It will be briefly discussed in the following section.
+
+Topology File
+-------------
+A CHARMM forcefield topology file contains all of the information needed to convert a list of residue names into a complete PSF structure file. The topology is a whitespace separated file format, which contains a list of atoms and their corresponding masses, and a list of residue information (charges, composition, and topology). Essentially, it is a non-redundant lookup table equivalent to the PSF file.
+
+This is followed by a series of residues, which tell PSFGen what atoms are bonded to a given atom. Each residue is comprised of four key elements:
+
+- A header beginning with the keyword RESI with the residue name and net charge
+- A body with multiple ATOM entries (not to be confused with the PDB-style entries of the same name), which list the partial charge on the particle and what kind of atom each named atom in a specific molecule/residue is.
+- A section of lines starting with the word BOND contains pairs of bonded atoms (typically 3 per line)
+- A closing section with instructions for PSFGen.
+
+Here’s an example of topology file for isobutane:
+
+.. code-block:: text
+
+  * Custom top file -- branched alkanes *
+  11
+  !
+  MASS 1 CH3 15.035 C !
+  MASS 2 CH1 13.019 C !
+
+  AUTOGENERATE ANGLES DIHEDRALS
+
+  RESI ISB    0.00 !  isobutane - TraPPE
+  GROUP
+  ATOM C1 CH1 0.00 !  C3
+  ATOM C2 CH3 0.00 !  C2-C1
+  ATOM C3 CH3 0.00 !  C4
+  ATOM C4 CH3 0.00 !
+  BOND C1 C2 C1 C3 C1 C4
+  PATCHING FIRS NONE LAST NONE
+
+  END
+
+.. Note:: The keyword END must be used to terminate this file and keywords related to the auto-generation process must be placed near the top of the file, after the MASS definitions.
+
+.. Tip::
+
+  More in-depth information can be found in the following links:
+
+  - `Topology Tutorial`_
+
+  .. _Topology Tutorial: http://www.ks.uiuc.edu/Training/Tutorials/science/topology/topology-tutorial.pdf
+
+  - `NAMD Tutorial: Examining the Topology File`_
+
+  .. _`NAMD Tutorial: Examining the Topology File`: http://www.ks.uiuc.edu/Training/Tutorials/science/topology/topology-html/node4.html
+
+  - `Developing Topology and Parameter Files`_
+
+  .. _Developing Topology and Parameter Files: http://www.ks.uiuc.edu/Training/Tutorials/science/forcefield-tutorial/forcefield-html/node6.html
+
+  - `NAMD Tutorial: Topology Files`_
+
+  .. _`NAMD Tutorial: Topology Files`: http://www.ks.uiuc.edu/Training/Tutorials/namd/namd-tutorial-win-html/node25.html
+
+Parameter File(s)
+-----------------
+
+Currently, GOMC uses a single parameter file and the user has the two kinds of parameter file choices:
+
+- ``CHARMM`` (Chemistry at Harvard Molecular Mechanics) compatible parameter file
+- ``EXOTIC`` parameter file
+
+If the parameter file type is not specified or if the chosen file is missing, an error will result.
+
+Both force field file options are whitespace separated files with sections preceded by a tag. When a known tag (representing a molecular interaction in the model) is encountered, reading of that section of the force field begins. Comments (anything after a ``*`` or ``!``) and whitespace are ignored. Reading concludes when the end of the file is reached or another section tag is encountered.
+
+CHARMM format parameter file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+CHARMM contains a widely used model for describing energies in Monte Carlo and molecular dynamics simulations. It is intended to be compatible with other codes that use such a format, such as NAMD. See `here`_ for a general overview of the CHARMM force field.
+
+.. _here: http://www.charmmtutorial.org/index.php/The_Energy_Function
+
+Here’s the basic CHARMM contributions that are supported in GOMC:
+
+.. math::
+
+  U_{\texttt{bond}}&=\sum_{\texttt{bonds}} K_b(b-b_0)^2\\
+  U_{\texttt{dihedral}}&=\sum_{\texttt{dihedrals}} K_{\phi} [1+\cos(n\phi - \delta)]\\
+  U_{\texttt{angle}}&=\sum_{\texttt{angles}} K_{\theta}(\theta-\theta_0)^2\\
+  U_{\texttt{LJ}}&=\sum_{\texttt{nonbonded}} \epsilon_{ij}\left[\left(\frac{R_{min_{ij}}}{r_{ij}}\right)^{12}-2\left(\frac{R_{min_{ij}}}{r_{ij}}\right)^6\right]+ \frac{q_i q_j}{\epsilon r_{ij}} \\
+
+As seen above, the following are recognized, read and used:
+
+- ``BONDS``
+  - Quadratic expression describing bond stretching based on bond length (b) in Angstrom
+  – Typically, it is ignored as bonds are rigid for Monte Carlo simulations. To specify that it is to be ignored, put a very large value i.e. “999999999999” for :math:`K_b`.
+
+  .. Note:: GOMC does not sample bond stretch.
+
+  .. figure:: _static/bonds.png
+
+    Oscillations about the equilibrium bond length
+
+- ``ANGLES``
+  - Describe the conformational lbehavior of an angle (:math:`\delta`) between three atoms, one of which is shared branch point to the other two. To fix any angle and ignore the related angle energy, put a very large value i.e. “999999999999” for :math:`K_\delta`.
+
+  .. figure:: _static/angle.png
+
+    Oscillations of 3 atoms about an equilibrium bond angle
+
+- ``DIHEDRALS``
+  - Describes crankshaft-like rotation behavior about a central bond in a series of three consecutive bonds (rotation is given as :math:`\phi`).
+
+  .. figure:: _static/dihedrals.png
+
+    Torsional rotation of 4 atoms about a central bond
+
+- ``NONBONDED``
+  - This tag name only should be used if CHARMM force files are being used. This section describes 12-6 (Lennard-Jones) non-bonded interactions. Non-bonded parameters are assigned by specifying atom type name followed by polarizabilities (which will be ignored), minimum energy, and (minimum radius)/2. In order to modify 1-4 interaction, a second polarizability (again, will be ignored), minimum energy, and (minimum radius)/2 need to be defined; otherwise, the same parameter will be considered for 1-4 interaction.
+
+  .. figure:: _static/nonbonded.png
+
+    Non-bonded energy terms (electrostatics and Lennard-Jones)
+
+- ``NBFIX``
+  - This tag name only should be used if CHARMM force field is being used. This section allows in- teraction between two pairs of atoms to be modified, done by specifying two atom type names followed by minimum energy and minimum radius. In order to modify 1-4 interaction, a second minimum energy and minimum radius need to be defined; otherwise, the same parameter will be considered for 1-4 interaction.
+
+  .. Note:: Please pay attention that in this section we define minimum radius, not (minimum ra- dius)/2 as it is defined in the NONBONDED section.
+
+  Currently, supported sections of the ``CHARMM`` compliant file include ``BONDS``, ``ANGLES``, ``DIHEDRALS``, ``NONBONDED``, ``NBFIX``. Other sections such as ``CMAP`` are not currently read or supported.
+
+  
