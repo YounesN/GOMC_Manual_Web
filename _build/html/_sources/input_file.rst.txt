@@ -354,4 +354,323 @@ As seen above, the following are recognized, read and used:
 
   Currently, supported sections of the ``CHARMM`` compliant file include ``BONDS``, ``ANGLES``, ``DIHEDRALS``, ``NONBONDED``, ``NBFIX``. Other sections such as ``CMAP`` are not currently read or supported.
 
-  
+BONDS
+^^^^^
+
+("bond stretching") is one key section of the CHARMM-compliant file. Units for the :math:`K_b` variable in this section are in kcal/mol; the :math:`b_0` section (which represents the equilibrium bond length for that kind of pair) is measured in Angstroms.
+
+.. code-block:: text
+
+  BONDS
+  !V(bond) = Kb(b - b0)**2
+  !
+  !Kb:  kcal/mole/A**2
+  !b0:  A
+  !
+  !  Kb (kcal/mol) = Kb (K) * Boltz.  const.;
+  !
+  !atom type Kb b0 description
+  CH3 CH1 9999999999 1.540 !  TraPPE 2 
+
+.. note:: The :math:`K_b` value may appear odd, but this is because a larger value corresponds to a more rigid bond. As Monte Carlo force fields (e.g. TraPPE) typically treat molecules as rigid constructs, :math:`K_b` is set to a large value - 9999999999. Sampling bond stretch is not supported in GOMC.
+
+ANGLES
+^^^^^^
+
+("bond bending"), where :math:`\theta` and :math:`\theta_0` are commonly measured in degrees and :math:`K_\theta` is measured in kcal/mol/K. These values, in literature, are often expressed in Kelvin (K). To convert Kelvin to kcal/mol/K, multiply by the Boltzmann constant – :math:`K_\theta`, 0.0019872041 kcal/mol. In order to fix the angle, it requires to set a large value for :math:`K_\theta`. By assigning a large value like 9999999999, specified angle will be fixed and energy of that angle will considered to be zero.
+
+Here is an example of what is necessary for isobutane:
+
+.. code-block:: text
+
+  ANGLES
+  !
+  !V(angle) = Ktheta(Theta - Theta0)**2
+  !
+  !V(Urey-Bradley) = Kub(S - S0)**2
+  !
+  !Ktheta:  kcal/mole/rad**2
+  !Theta0:  degrees
+  !S0:  A
+  !
+  !  Ktheta (kcal/mol) = Ktheta (K) * Boltz.  const.
+  !
+  !atom types Ktheta Theta0 Kub(?)  S0(?)
+  CH3 CH1 CH3 62.100125 112.00 !  TraPPE 2
+
+Some CHARMM ANGLES section entries include ``Urey-Bradley`` potentials (:math:`K_{ub}`, :math:`b_{ub}`), in addition to the standard quadratic angle potential. The constants related to this potential function are currently read, but the logic has not been added to calculate this potential function. Support for this potential function will be added in later versions of the code.
+
+DIHEDRALS
+^^^^^^^^^
+
+The final major bonded interactions section of the CHARMM compliant parameter file are the DIHEDRALS. Each dihedral is composed of a dihedral series of 1 or more terms. Often, there are 4 to 6 terms in a dihedral. Angles for the dihedrals’ deltas are given in degrees.
+
+Since isobutane has no dihedral, here are the parameters pertaining to 2,3-dimethylbutane:
+
+.. code-block:: text
+
+  DIHEDRALS
+  !
+  !V(dihedral) = Kchi(1 + cos(n(chi) - delta))
+  !
+  !Kchi:  kcal/mole
+  !n:  multiplicity
+  !delta:  degrees
+  !
+  !  Kchi (kcal/mol) = Kchi (K) * Boltz.  const.
+  !
+  !atom types Kchi n delta description
+  X CH1 CH1 X -0.498907 0 0.0   !  TraPPE 2
+  X CH1 CH1 X  0.851974 1 0.0   !  TraPPE 2
+  X CH1 CH1 X -0.222269 2 180.0 !  TraPPE 2
+  X CH1 CH1 X  0.876894 3 0.0   !  TraPPE 2
+
+.. note:: The code allows the use of 'X' to indicate ambiguous positions on the ends. This is useful because this kind is often determined solely by the two middle atoms in the middle of the dihedral, according to literature.
+
+IMPROPERS
+^^^^^^^^^
+
+Energy parameters used to describe out-of-plane rocking are currently read, but unused. The section is often blank. If it becomes necessary, algorithms to calculate the improper energy will need to be added.
+
+NONBONDED
+^^^^^^^^^
+
+The next section of the CHARMM style parameter file is the NONBONDED. In order to use TraPPE this section of the CHARMM compliant file is critical. Here’s an example with our isobutane potential model:
+
+.. code-block:: text
+
+  NONBONDED
+  !
+  !V(Lennard-Jones) = Eps,i,j[(Rmin,i,j/ri,j)**12 - 2(Rmin,i,j/ri,j)**6]
+  !
+  !atom ignored epsilon Rmin/2 ignored eps,1-4 Rmin/2,1-4
+  !
+  CH3 0.0 -0.194745992 2.10461634058 0.0 0.0 0.0 !  TraPPE 1
+  CH1 0.0 -0.019872040 2.62656119304 0.0 0.0 0.0 !  TraPPE 2
+  End
+
+.. note:: The :math:`R_{min}` is different from :math:`\sigma`. :math:`\sigma` is the distance to the x-intercept (where interaction energy goes from being repulsive to positive). :math:`R_{min}` is the potential well-depth, where the attraction is maximum. To convert :math:`\sigma` to :math:`R_{min}`, simply multiply :math:`\sigma` by 0.56123102415, and flag it with a negative sign.
+
+NBFIX
+^^^^^
+
+The last section of the CHARMM style parameter file is the NBFIX. In this section, individual pair interaction will be modified. First, pseudo non-bonded parameters have to be defined in NONBONDED and modified in NBFIX. Here?s an example if it is required to modify interaction between CH3 and CH1 atoms:
+
+.. code-block:: text
+
+  NBFIX
+  !V(Lennard-Jones) = Eps,i,j[(Rmin,i,j/ri,j)**12 - 2(Rmin,i,j/ri,j)**6]
+  !
+  !atom atom epsilon Rmin eps,1-4 Rmin,1-4
+  CH3 CH1 -0.294745992 1.10461634058 !
+  End
+
+Exotic Parameter File
+---------------------
+
+The exotic file is intended for use with nonstandard/specialty models of molecular interaction, which are not included in CHARMM standard. Currently, two custom interaction are included:
+
+- ``NONBODED_MIE`` This section describes n-6 (Lennard-Jones) non-bonded interactions. The Lennard- Jones potential (12-6) is a subset of this potential. Non-bonded parameters are assigned by specifying atom type name followed by minimum energy, atom diameter, and repulsion exponent. In order to modify 1-4 interaction, a second minimum energy, atom diameter, and repulsion exponent need to be defined; otherwise, the same parameters would be considered for 1-4 interaction.
+- ``NBFIX_MIE`` This section allows n-6 (Lennard-Jones) interaction between two pairs of atoms to be mod- ified. This is done by specifying two atoms type names followed by minimum energy, atom diameter, and repulsion exponent. In order to modify 1-4 interaction, a second minimum energy, atom diameter, and repulsion exponent need to be defined; otherwise, the same parameter will be considered for 1-4 interaction.
+
+.. note:: In ``EXOTIC`` force field, the definition of atom diameter(:math:`\sigma`) is same for both NONBONDED_MIE and NBFIX_MIE.
+
+Otherwise, the exotic file reuses the same geometry section headings - BONDS / ANGLES / DIHEDRALS / etc. The only difference in these sections versus in the CHARMM format force field file is that the energies are in Kelvin ('K'), the unit most commonly found for parameters in Monte Carlo chemical simulation literature. This precludes the need to convert to kcal/mol, the energy unit used in CHARMM.
+The most frequently used section of the exotic files in the Mie potential section is NONBONDED_MIE. Here are the parameters that are used to simulate alkanes:
+
+.. code-block:: text
+
+  NONBONDED_MIE
+  !
+  !V(mie) = 4*eps*((sig ij/r ij)^n-(sig ij/r ij)^6)
+  !
+  !atom eps sig n eps,1-4 sig,1-4 n,1-4
+  CH4 161.00 3.740 14 0.0 0.0 0.0 ! Potoff, et al. ’09
+  CH3 121.25 3.783 16 0.0 0.0 0.0 ! Potoff, et al. ’09
+  CH2  61.00 3.990 16 0.0 0.0 0.0 ! Potoff, et al. ’09
+
+.. note:: Although the units (Angstroms) are the same, the exotic file uses :math:`\sigma`, not the :math:`R_{min}` used by CHARMM. The energy in the exotic file are expressed in Kelvin (K), as this is the standard convention in the literature.
+
+Control File (\*.conf)
+----------------------
+The control file is GOMC’s proprietary input file. It contains key settings. The settings generally fall under three categories:
+
+- Input/Simulation Setup
+- System Settings for During Run
+- Output Settings
+
+.. note:: The control file is designed to recognize logic values, such as “yes/true/on” or “no/false/off”.
+
+Input/Simulation Setup
+^^^^^^^^^^^^^^^^^^^^^^
+
+In this section, input file names are listed. In addition, if you want to restart your simulation or use integer seed for running your simulation, you need to modify this section according to your purpose.
+
+``Restart``
+  Determines whether to restart the simulation from previous simulation or not.
+
+  - Value 1: Boolean - True if restart, false otherwise.
+
+``PRNG``
+  Dictates how to start the pseudo-random number generator (PRNG)
+
+  - Value 1: String
+
+    - RANDOM: Randomizes Mersenne Twister PRNG with random bits based on the system time.
+
+    .. code-block:: text
+
+       #################################
+       # kind {RANDOM, INTSEED}
+       #################################
+       PRNG RANDOM
+
+    - INTSEED: This option "seeds" the Mersenne Twister PRNG with a standard integer. When the same integer is used, the generated PRNG stream should be the same every time, which is helpful in tracking down bugs.
+
+``Random_Seed``
+  Defines the seed number. If "INTSEED" is chosen, seed number needs to be specified; otherwise, the program will terminate.
+
+  - Value 1: ULONG - If "INTSEED" option is selected for PRNG (See above example)
+
+  .. code-block:: text
+
+    #################################
+    # kind {RANDOM, INTSEED}
+    #################################
+    PRNG INTSEED
+    Random Seed 50
+
+``ParaTypeCHARMM``
+  Sets force field type to CHARMM style.
+
+  - Value 1: Boolean - True if it is CHARMM forcefield, false otherwise.
+
+  .. code-block:: text
+
+    #################################
+    # FORCE FIELD TYPE
+    #################################
+    ParaTypeCHARMM true
+
+``ParaTypeEXOTIC``
+  Sets force field type to EXOTIC style.
+
+  - Value 1: Boolean - True if it is EXOTIC forcefield, false otherwise.
+
+  .. code-block:: text
+
+    #################################
+    # FORCE FIELD TYPE
+    #################################
+    ParaTypeEXOTIC true
+
+``ParaTypeMARTINI``
+  Sets force field type to MARTINI style.
+
+  - Value 1: Boolean - True if it is MARTINI forcefield, false otherwise.
+
+  .. code-block:: text
+
+    #################################
+    # FORCE FIELD TYPE
+    #################################
+    ParaTypeMARTINI true
+
+``Parameters``
+  Provides the name and location of the parameter file to use for the simulation.
+
+  - Value 1: String - Sets the name of the parameter file.
+
+  .. code-block:: text
+
+    #################################
+    # FORCE FIELD TYPE
+    #################################
+    ParaTypeCHARMM yes
+    Parameters ../../common/Par_TraPPE_Alkanes.inp
+
+``Coordinates``
+  Defines the PDB file names (coordinates) and location for each box in the system.
+
+  - Value 1: Integer - Sets box number (starts from '0').
+
+  - Value 2: String - Sets the name of PDB file.
+
+  .. note:: NVT and NPT ensembles requires only one PDB file and GEMC/GCMC requires two PDB files. If the number of PDB files is not compatible with the simulation type, the program will terminate.
+
+  Example of NVT or NPT ensemble:
+
+  .. code-block:: text
+
+    #################################
+    # INPUT PDB FILES - NVT or NPT ensemble
+    #################################
+    Coordinates 0 STEP3_START_ISB_sys.pdb
+
+  Example of Gibbs or GC ensemble:
+
+  .. code-block:: text
+
+    #################################
+    # INPUT PDB FILES - Gibbs or GC ensemble
+    #################################
+    Coordinates 0 STEP3_START_ISB_sys_BOX_0.pdb
+    Coordinates 1 STEP3_START_ISB_sys_BOX_1.pdb
+
+  .. note:: In case of Restart true, the restart PDB output file from GOMC (OutputName_BOX_0_restart.pdb) can be used for each box.
+
+  Example of Gibbs ensemble when Restart mode is active:
+
+  .. code-block:: text
+
+    #################################
+    # INPUT PDB FILES
+    #################################
+    Coordinates 0 ISB_T_270_k_BOX_0_restart.pdb
+    Coordinates 1 ISB_T_270_k_BOX_1_restart.pdb
+
+``Structures``
+  Defines the PSF filenames (structures) for each box in the system.
+
+  - Value 1: Integer - Sets box number (start from '0')
+
+  - Value 2: String - Sets the name of PSF file.
+
+  .. note:: NVT and NPT ensembles requires only one PSF file and GEMC/GCMC requires two PSF files. If the number of PSF files is not compatible with the simulation type, the program will terminate.
+
+  Example of NVT or NPT ensemble: 
+
+  .. code-block:: text
+
+    #################################
+    # INPUT PSF FILES
+    #################################
+    Structure 0 STEP3_START_ISB_sys.psf
+
+  Example of Gibbs or GC ensemble:
+
+  .. code-block:: text
+
+    #################################
+    # INPUT PSF FILES
+    #################################
+    Structure 0 STEP3_START_ISB_sys_BOX_0.psf
+    Structure 1 STEP3_START_ISB_sys_BOX_1.psf
+
+  .. note:: In case of Restart true, the PSF output file from GOMC (OutputName merged.psf) can be used for both boxes.
+
+  Example of Gibbs ensemble when Restart mode is active:
+
+  .. code-block:: text
+
+    #################################
+    # INPUT PSF FILES
+    #################################
+    Structure 0 ISB_T_270_k_merged.psf
+    Structure 1 ISB_T_270_k_merged.psf
+
+System Settings for During Run Setup
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This section contains all the variables not involved in the output of data during the simulation, or in the reading of input files at the start of the simulation. In other words, it contains settings related to the moves, the thermodynamic constants (based on choice of ensemble), and the length of the simulation.
+Note that some tags, or entries for tags, are only used in certain ensembles (e.g. Gibbs ensemble). These cases are denoted with colored text.
+

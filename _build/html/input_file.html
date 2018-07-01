@@ -99,6 +99,18 @@
 <li class="toctree-l2"><a class="reference internal" href="#topology-file">Topology File</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#parameter-file-s">Parameter File(s)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#charmm-format-parameter-file">CHARMM format parameter file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bonds">BONDS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#angles">ANGLES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dihedrals">DIHEDRALS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#impropers">IMPROPERS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nonbonded">NONBONDED</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nbfix">NBFIX</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#exotic-parameter-file">Exotic Parameter File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#control-file-conf">Control File (*.conf)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#input-simulation-setup">Input/Simulation Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#system-settings-for-during-run-setup">System Settings for During Run Setup</a></li>
 </ul>
 </li>
 </ul>
@@ -492,6 +504,324 @@ U_{\texttt{LJ}}&amp;=\sum_{\texttt{nonbonded}} \epsilon_{ij}\left[\left(\frac{R_
 <p>Currently, supported sections of the <code class="docutils literal notranslate"><span class="pre">CHARMM</span></code> compliant file include <code class="docutils literal notranslate"><span class="pre">BONDS</span></code>, <code class="docutils literal notranslate"><span class="pre">ANGLES</span></code>, <code class="docutils literal notranslate"><span class="pre">DIHEDRALS</span></code>, <code class="docutils literal notranslate"><span class="pre">NONBONDED</span></code>, <code class="docutils literal notranslate"><span class="pre">NBFIX</span></code>. Other sections such as <code class="docutils literal notranslate"><span class="pre">CMAP</span></code> are not currently read or supported.</p>
 </li>
 </ul>
+</div>
+<div class="section" id="bonds">
+<h3>BONDS<a class="headerlink" href="#bonds" title="Permalink to this headline">¶</a></h3>
+<p>(“bond stretching”) is one key section of the CHARMM-compliant file. Units for the <span class="math notranslate nohighlight">\(K_b\)</span> variable in this section are in kcal/mol; the <span class="math notranslate nohighlight">\(b_0\)</span> section (which represents the equilibrium bond length for that kind of pair) is measured in Angstroms.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>BONDS
+!V(bond) = Kb(b - b0)**2
+!
+!Kb:  kcal/mole/A**2
+!b0:  A
+!
+!  Kb (kcal/mol) = Kb (K) * Boltz.  const.;
+!
+!atom type Kb b0 description
+CH3 CH1 9999999999 1.540 !  TraPPE 2
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The <span class="math notranslate nohighlight">\(K_b\)</span> value may appear odd, but this is because a larger value corresponds to a more rigid bond. As Monte Carlo force fields (e.g. TraPPE) typically treat molecules as rigid constructs, <span class="math notranslate nohighlight">\(K_b\)</span> is set to a large value - 9999999999. Sampling bond stretch is not supported in GOMC.</p>
+</div>
+</div>
+<div class="section" id="angles">
+<h3>ANGLES<a class="headerlink" href="#angles" title="Permalink to this headline">¶</a></h3>
+<p>(“bond bending”), where <span class="math notranslate nohighlight">\(\theta\)</span> and <span class="math notranslate nohighlight">\(\theta_0\)</span> are commonly measured in degrees and <span class="math notranslate nohighlight">\(K_\theta\)</span> is measured in kcal/mol/K. These values, in literature, are often expressed in Kelvin (K). To convert Kelvin to kcal/mol/K, multiply by the Boltzmann constant – <span class="math notranslate nohighlight">\(K_\theta\)</span>, 0.0019872041 kcal/mol. In order to fix the angle, it requires to set a large value for <span class="math notranslate nohighlight">\(K_\theta\)</span>. By assigning a large value like 9999999999, specified angle will be fixed and energy of that angle will considered to be zero.</p>
+<p>Here is an example of what is necessary for isobutane:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ANGLES
+!
+!V(angle) = Ktheta(Theta - Theta0)**2
+!
+!V(Urey-Bradley) = Kub(S - S0)**2
+!
+!Ktheta:  kcal/mole/rad**2
+!Theta0:  degrees
+!S0:  A
+!
+!  Ktheta (kcal/mol) = Ktheta (K) * Boltz.  const.
+!
+!atom types Ktheta Theta0 Kub(?)  S0(?)
+CH3 CH1 CH3 62.100125 112.00 !  TraPPE 2
+</pre></div>
+</div>
+<p>Some CHARMM ANGLES section entries include <code class="docutils literal notranslate"><span class="pre">Urey-Bradley</span></code> potentials (<span class="math notranslate nohighlight">\(K_{ub}\)</span>, <span class="math notranslate nohighlight">\(b_{ub}\)</span>), in addition to the standard quadratic angle potential. The constants related to this potential function are currently read, but the logic has not been added to calculate this potential function. Support for this potential function will be added in later versions of the code.</p>
+</div>
+<div class="section" id="dihedrals">
+<h3>DIHEDRALS<a class="headerlink" href="#dihedrals" title="Permalink to this headline">¶</a></h3>
+<p>The final major bonded interactions section of the CHARMM compliant parameter file are the DIHEDRALS. Each dihedral is composed of a dihedral series of 1 or more terms. Often, there are 4 to 6 terms in a dihedral. Angles for the dihedrals’ deltas are given in degrees.</p>
+<p>Since isobutane has no dihedral, here are the parameters pertaining to 2,3-dimethylbutane:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>DIHEDRALS
+!
+!V(dihedral) = Kchi(1 + cos(n(chi) - delta))
+!
+!Kchi:  kcal/mole
+!n:  multiplicity
+!delta:  degrees
+!
+!  Kchi (kcal/mol) = Kchi (K) * Boltz.  const.
+!
+!atom types Kchi n delta description
+X CH1 CH1 X -0.498907 0 0.0   !  TraPPE 2
+X CH1 CH1 X  0.851974 1 0.0   !  TraPPE 2
+X CH1 CH1 X -0.222269 2 180.0 !  TraPPE 2
+X CH1 CH1 X  0.876894 3 0.0   !  TraPPE 2
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The code allows the use of ‘X’ to indicate ambiguous positions on the ends. This is useful because this kind is often determined solely by the two middle atoms in the middle of the dihedral, according to literature.</p>
+</div>
+</div>
+<div class="section" id="impropers">
+<h3>IMPROPERS<a class="headerlink" href="#impropers" title="Permalink to this headline">¶</a></h3>
+<p>Energy parameters used to describe out-of-plane rocking are currently read, but unused. The section is often blank. If it becomes necessary, algorithms to calculate the improper energy will need to be added.</p>
+</div>
+<div class="section" id="nonbonded">
+<h3>NONBONDED<a class="headerlink" href="#nonbonded" title="Permalink to this headline">¶</a></h3>
+<p>The next section of the CHARMM style parameter file is the NONBONDED. In order to use TraPPE this section of the CHARMM compliant file is critical. Here’s an example with our isobutane potential model:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>NONBONDED
+!
+!V(Lennard-Jones) = Eps,i,j[(Rmin,i,j/ri,j)**12 - 2(Rmin,i,j/ri,j)**6]
+!
+!atom ignored epsilon Rmin/2 ignored eps,1-4 Rmin/2,1-4
+!
+CH3 0.0 -0.194745992 2.10461634058 0.0 0.0 0.0 !  TraPPE 1
+CH1 0.0 -0.019872040 2.62656119304 0.0 0.0 0.0 !  TraPPE 2
+End
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The <span class="math notranslate nohighlight">\(R_{min}\)</span> is different from <span class="math notranslate nohighlight">\(\sigma\)</span>. <span class="math notranslate nohighlight">\(\sigma\)</span> is the distance to the x-intercept (where interaction energy goes from being repulsive to positive). <span class="math notranslate nohighlight">\(R_{min}\)</span> is the potential well-depth, where the attraction is maximum. To convert <span class="math notranslate nohighlight">\(\sigma\)</span> to <span class="math notranslate nohighlight">\(R_{min}\)</span>, simply multiply <span class="math notranslate nohighlight">\(\sigma\)</span> by 0.56123102415, and flag it with a negative sign.</p>
+</div>
+</div>
+<div class="section" id="nbfix">
+<h3>NBFIX<a class="headerlink" href="#nbfix" title="Permalink to this headline">¶</a></h3>
+<p>The last section of the CHARMM style parameter file is the NBFIX. In this section, individual pair interaction will be modified. First, pseudo non-bonded parameters have to be defined in NONBONDED and modified in NBFIX. Here?s an example if it is required to modify interaction between CH3 and CH1 atoms:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>NBFIX
+!V(Lennard-Jones) = Eps,i,j[(Rmin,i,j/ri,j)**12 - 2(Rmin,i,j/ri,j)**6]
+!
+!atom atom epsilon Rmin eps,1-4 Rmin,1-4
+CH3 CH1 -0.294745992 1.10461634058 !
+End
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="exotic-parameter-file">
+<h2>Exotic Parameter File<a class="headerlink" href="#exotic-parameter-file" title="Permalink to this headline">¶</a></h2>
+<p>The exotic file is intended for use with nonstandard/specialty models of molecular interaction, which are not included in CHARMM standard. Currently, two custom interaction are included:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">NONBODED_MIE</span></code> This section describes n-6 (Lennard-Jones) non-bonded interactions. The Lennard- Jones potential (12-6) is a subset of this potential. Non-bonded parameters are assigned by specifying atom type name followed by minimum energy, atom diameter, and repulsion exponent. In order to modify 1-4 interaction, a second minimum energy, atom diameter, and repulsion exponent need to be defined; otherwise, the same parameters would be considered for 1-4 interaction.</li>
+<li><code class="docutils literal notranslate"><span class="pre">NBFIX_MIE</span></code> This section allows n-6 (Lennard-Jones) interaction between two pairs of atoms to be mod- ified. This is done by specifying two atoms type names followed by minimum energy, atom diameter, and repulsion exponent. In order to modify 1-4 interaction, a second minimum energy, atom diameter, and repulsion exponent need to be defined; otherwise, the same parameter will be considered for 1-4 interaction.</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In <code class="docutils literal notranslate"><span class="pre">EXOTIC</span></code> force field, the definition of atom diameter(<span class="math notranslate nohighlight">\(\sigma\)</span>) is same for both NONBONDED_MIE and NBFIX_MIE.</p>
+</div>
+<p>Otherwise, the exotic file reuses the same geometry section headings - BONDS / ANGLES / DIHEDRALS / etc. The only difference in these sections versus in the CHARMM format force field file is that the energies are in Kelvin (‘K’), the unit most commonly found for parameters in Monte Carlo chemical simulation literature. This precludes the need to convert to kcal/mol, the energy unit used in CHARMM.
+The most frequently used section of the exotic files in the Mie potential section is NONBONDED_MIE. Here are the parameters that are used to simulate alkanes:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>NONBONDED_MIE
+!
+!V(mie) = 4*eps*((sig ij/r ij)^n-(sig ij/r ij)^6)
+!
+!atom eps sig n eps,1-4 sig,1-4 n,1-4
+CH4 161.00 3.740 14 0.0 0.0 0.0 ! Potoff, et al. ’09
+CH3 121.25 3.783 16 0.0 0.0 0.0 ! Potoff, et al. ’09
+CH2  61.00 3.990 16 0.0 0.0 0.0 ! Potoff, et al. ’09
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Although the units (Angstroms) are the same, the exotic file uses <span class="math notranslate nohighlight">\(\sigma\)</span>, not the <span class="math notranslate nohighlight">\(R_{min}\)</span> used by CHARMM. The energy in the exotic file are expressed in Kelvin (K), as this is the standard convention in the literature.</p>
+</div>
+</div>
+<div class="section" id="control-file-conf">
+<h2>Control File (*.conf)<a class="headerlink" href="#control-file-conf" title="Permalink to this headline">¶</a></h2>
+<p>The control file is GOMC’s proprietary input file. It contains key settings. The settings generally fall under three categories:</p>
+<ul class="simple">
+<li>Input/Simulation Setup</li>
+<li>System Settings for During Run</li>
+<li>Output Settings</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The control file is designed to recognize logic values, such as “yes/true/on” or “no/false/off”.</p>
+</div>
+<div class="section" id="input-simulation-setup">
+<h3>Input/Simulation Setup<a class="headerlink" href="#input-simulation-setup" title="Permalink to this headline">¶</a></h3>
+<p>In this section, input file names are listed. In addition, if you want to restart your simulation or use integer seed for running your simulation, you need to modify this section according to your purpose.</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">Restart</span></code></dt>
+<dd><p class="first">Determines whether to restart the simulation from previous simulation or not.</p>
+<ul class="last simple">
+<li>Value 1: Boolean - True if restart, false otherwise.</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">PRNG</span></code></dt>
+<dd><p class="first">Dictates how to start the pseudo-random number generator (PRNG)</p>
+<ul class="last">
+<li><p class="first">Value 1: String</p>
+<ul class="simple">
+<li>RANDOM: Randomizes Mersenne Twister PRNG with random bits based on the system time.</li>
+</ul>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# kind {RANDOM, INTSEED}
+#################################
+PRNG RANDOM
+</pre></div>
+</div>
+<ul class="simple">
+<li>INTSEED: This option “seeds” the Mersenne Twister PRNG with a standard integer. When the same integer is used, the generated PRNG stream should be the same every time, which is helpful in tracking down bugs.</li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">Random_Seed</span></code></dt>
+<dd><p class="first">Defines the seed number. If “INTSEED” is chosen, seed number needs to be specified; otherwise, the program will terminate.</p>
+<ul class="simple">
+<li>Value 1: ULONG - If “INTSEED” option is selected for PRNG (See above example)</li>
+</ul>
+<div class="last highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# kind {RANDOM, INTSEED}
+#################################
+PRNG INTSEED
+Random Seed 50
+</pre></div>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">ParaTypeCHARMM</span></code></dt>
+<dd><p class="first">Sets force field type to CHARMM style.</p>
+<ul class="simple">
+<li>Value 1: Boolean - True if it is CHARMM forcefield, false otherwise.</li>
+</ul>
+<div class="last highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# FORCE FIELD TYPE
+#################################
+ParaTypeCHARMM true
+</pre></div>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">ParaTypeEXOTIC</span></code></dt>
+<dd><p class="first">Sets force field type to EXOTIC style.</p>
+<ul class="simple">
+<li>Value 1: Boolean - True if it is EXOTIC forcefield, false otherwise.</li>
+</ul>
+<div class="last highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# FORCE FIELD TYPE
+#################################
+ParaTypeEXOTIC true
+</pre></div>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">ParaTypeMARTINI</span></code></dt>
+<dd><p class="first">Sets force field type to MARTINI style.</p>
+<ul class="simple">
+<li>Value 1: Boolean - True if it is MARTINI forcefield, false otherwise.</li>
+</ul>
+<div class="last highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# FORCE FIELD TYPE
+#################################
+ParaTypeMARTINI true
+</pre></div>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">Parameters</span></code></dt>
+<dd><p class="first">Provides the name and location of the parameter file to use for the simulation.</p>
+<ul class="simple">
+<li>Value 1: String - Sets the name of the parameter file.</li>
+</ul>
+<div class="last highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# FORCE FIELD TYPE
+#################################
+ParaTypeCHARMM yes
+Parameters ../../common/Par_TraPPE_Alkanes.inp
+</pre></div>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">Coordinates</span></code></dt>
+<dd><p class="first">Defines the PDB file names (coordinates) and location for each box in the system.</p>
+<ul class="simple">
+<li>Value 1: Integer - Sets box number (starts from ‘0’).</li>
+<li>Value 2: String - Sets the name of PDB file.</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">NVT and NPT ensembles requires only one PDB file and GEMC/GCMC requires two PDB files. If the number of PDB files is not compatible with the simulation type, the program will terminate.</p>
+</div>
+<p>Example of NVT or NPT ensemble:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# INPUT PDB FILES - NVT or NPT ensemble
+#################################
+Coordinates 0 STEP3_START_ISB_sys.pdb
+</pre></div>
+</div>
+<p>Example of Gibbs or GC ensemble:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# INPUT PDB FILES - Gibbs or GC ensemble
+#################################
+Coordinates 0 STEP3_START_ISB_sys_BOX_0.pdb
+Coordinates 1 STEP3_START_ISB_sys_BOX_1.pdb
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In case of Restart true, the restart PDB output file from GOMC (OutputName_BOX_0_restart.pdb) can be used for each box.</p>
+</div>
+<p>Example of Gibbs ensemble when Restart mode is active:</p>
+<div class="last highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# INPUT PDB FILES
+#################################
+Coordinates 0 ISB_T_270_k_BOX_0_restart.pdb
+Coordinates 1 ISB_T_270_k_BOX_1_restart.pdb
+</pre></div>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">Structures</span></code></dt>
+<dd><p class="first">Defines the PSF filenames (structures) for each box in the system.</p>
+<ul class="simple">
+<li>Value 1: Integer - Sets box number (start from ‘0’)</li>
+<li>Value 2: String - Sets the name of PSF file.</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">NVT and NPT ensembles requires only one PSF file and GEMC/GCMC requires two PSF files. If the number of PSF files is not compatible with the simulation type, the program will terminate.</p>
+</div>
+<p>Example of NVT or NPT ensemble:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# INPUT PSF FILES
+#################################
+Structure 0 STEP3_START_ISB_sys.psf
+</pre></div>
+</div>
+<p>Example of Gibbs or GC ensemble:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# INPUT PSF FILES
+#################################
+Structure 0 STEP3_START_ISB_sys_BOX_0.psf
+Structure 1 STEP3_START_ISB_sys_BOX_1.psf
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In case of Restart true, the PSF output file from GOMC (OutputName merged.psf) can be used for both boxes.</p>
+</div>
+<p>Example of Gibbs ensemble when Restart mode is active:</p>
+<div class="last highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# INPUT PSF FILES
+#################################
+Structure 0 ISB_T_270_k_merged.psf
+Structure 1 ISB_T_270_k_merged.psf
+</pre></div>
+</div>
+</dd>
+</dl>
+</div>
+<div class="section" id="system-settings-for-during-run-setup">
+<h3>System Settings for During Run Setup<a class="headerlink" href="#system-settings-for-during-run-setup" title="Permalink to this headline">¶</a></h3>
+<p>This section contains all the variables not involved in the output of data during the simulation, or in the reading of input files at the start of the simulation. In other words, it contains settings related to the moves, the thermodynamic constants (based on choice of ensemble), and the length of the simulation.
+Note that some tags, or entries for tags, are only used in certain ensembles (e.g. Gibbs ensemble). These cases are denoted with colored text.</p>
 </div>
 </div>
 </div>
