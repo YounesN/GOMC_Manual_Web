@@ -20,7 +20,7 @@
 # -- Project information -----------------------------------------------------
 
 project = u'GOMC'
-copyright = u'2018, Younes Nejahi'
+copyright = u'2018, GOMC'
 author = u'Younes Nejahi'
 
 # The short X.Y version

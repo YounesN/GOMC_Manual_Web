@@ -17,3 +17,5 @@ Welcome to GOMC's documentation!
    download
    compiling
    input_file
+   output_file
+   putting_all_together

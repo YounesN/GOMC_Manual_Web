@@ -28,6 +28,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="GOMC’s Output Files, Terminal Output" href="output_file.html" />
     <link rel="prev" title="Compiling GOMC" href="compiling.html" /> 
 
   
@@ -111,10 +112,13 @@
 <li class="toctree-l2"><a class="reference internal" href="#control-file-conf">Control File (*.conf)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#input-simulation-setup">Input/Simulation Setup</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#system-settings-for-during-run-setup">System Settings for During Run Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#output-controls">Output Controls</a></li>
 </ul>
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="output_file.html">GOMC’s Output Files, Terminal Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="putting_all_together.html">Putting it all together: Running a GOMC Simulation</a></li>
 </ul>
 
             
@@ -627,9 +631,9 @@ The most frequently used section of the exotic files in the Mie potential sectio
 !V(mie) = 4*eps*((sig ij/r ij)^n-(sig ij/r ij)^6)
 !
 !atom eps sig n eps,1-4 sig,1-4 n,1-4
-CH4 161.00 3.740 14 0.0 0.0 0.0 ! Potoff, et al. ’09
-CH3 121.25 3.783 16 0.0 0.0 0.0 ! Potoff, et al. ’09
-CH2  61.00 3.990 16 0.0 0.0 0.0 ! Potoff, et al. ’09
+CH4 161.00 3.740 14 0.0 0.0 0.0 ! Potoff, et al. &#39;09
+CH3 121.25 3.783 16 0.0 0.0 0.0 ! Potoff, et al. &#39;09
+CH2  61.00 3.990 16 0.0 0.0 0.0 ! Potoff, et al. &#39;09
 </pre></div>
 </div>
 <div class="admonition note">
@@ -822,6 +826,613 @@ Structure 1 ISB_T_270_k_merged.psf
 <h3>System Settings for During Run Setup<a class="headerlink" href="#system-settings-for-during-run-setup" title="Permalink to this headline">¶</a></h3>
 <p>This section contains all the variables not involved in the output of data during the simulation, or in the reading of input files at the start of the simulation. In other words, it contains settings related to the moves, the thermodynamic constants (based on choice of ensemble), and the length of the simulation.
 Note that some tags, or entries for tags, are only used in certain ensembles (e.g. Gibbs ensemble). These cases are denoted with colored text.</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">GEMC</span></code></dt>
+<dd><p class="first"><em>(For Gibbs Ensemble runs only)</em> Defines the type of Gibbs Ensemble simulation you want to run. If neglected in Gibbs Ensemble, it simply defaults to const volume (NVT) Gibbs Ensemble.</p>
+<ul class="simple">
+<li>Value 1: String - Allows you to pick between isovolumetric (“NVT”) and isobaric (“NPT”) Gibbs ensemble simulations.</li>
+</ul>
+<div class="last highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# GEMC TYPE (DEFAULT IS NVT GEMC)
+#################################
+GEMC NVT
+</pre></div>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">Pressure</span></code></dt>
+<dd><p class="first">If “NPT” simulation is chosen, imposed pressure (in bar) needs to be specified; otherwise, the program will terminate.</p>
+<ul class="simple">
+<li>Value 1: Double - Constant pressure in bars.</li>
+</ul>
+<div class="last highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# GEMC TYPE (DEFAULT IS NVT GEMC)
+#################################
+GEMC NPT
+Pressure 5.76
+</pre></div>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">Temperature</span></code></dt>
+<dd><p class="first">Sets the temperature at which the system will run.</p>
+<ul class="last simple">
+<li>Value 1: Double - Constant temperature of simulation in degrees Kelvin.</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">Rcut</span></code></dt>
+<dd><p class="first">Sets a specific radius that non-bonded interaction energy and force will be considered and calculated using defined potential function.</p>
+<ul class="last simple">
+<li>Value 1: Double - The distance to truncate the Lennard-Jones potential at.</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">RcutLow</span></code></dt>
+<dd><p class="first">Sets a specific minimum possible in angstrom that reject any move that place any atom closer than specified distance.</p>
+<ul class="last simple">
+<li>Value 1: Double - The minimum possible distance between any atoms.</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">LRC</span></code></dt>
+<dd><p class="first">Defines whether or not long range corrections are used.</p>
+<ul class="last simple">
+<li>Value 1: Boolean - True to consider long range correction. In case of using “SHIFT” or “SWITCH” potential functions, LRC will be ignored.</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">Exclude</span></code></dt>
+<dd><p class="first">Defines which pairs of bonded atoms should be excluded from non-bonded interactions.</p>
+<ul class="last">
+<li><p class="first">Value 1: String - Allows you to choose between “1-2”, “1-3”, and “1-4”.</p>
+<dl class="docutils">
+<dt>1-2</dt>
+<dd><p class="first last">All interactions pairs of bonded atoms, except the ones that separated with one bond, will be considered and modified using 1-4 parameters defined in parameter file.</p>
+</dd>
+<dt>1-3</dt>
+<dd><p class="first last">All interaction pairs of bonded atoms, except the ones that separated with one or two bonds, will be considered and modified using 1-4 parameters defined in parameter file.</p>
+</dd>
+<dt>1-4</dt>
+<dd><p class="first last">All interaction pairs of bonded atoms, except the ones that separated with one, two or three bonds, will be considered using non-bonded parameters defined in parameter file.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The default value is “1-4”.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In CHARMM force field, the 1-4 interaction needs to be considered. Choosing “Exclude 1-3” will modify 1-4 interaction based on 1-4 parameter in parameter file. If a kind force field is used, where 1-4 interaction needs to be ignored, such as TraPPE, either “exclude 1-4” needs to be chosen or 1-4 parameter needs to be assigned a value of zero in the parameter file.</p>
+</div>
+</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">Potential</span></code></dt>
+<dd><p class="first">Defines the potential function type to calculate non-bonded interaction energy and force between atoms.</p>
+<ul class="last">
+<li><p class="first">Value 1: String - Allows you to pick between “VDW”, “SHIFT” and “SWITCH”.</p>
+<dl class="docutils">
+<dt>VDW</dt>
+<dd><p class="first">Nonbonded interaction energy and force calculated based on n-6 (Lennard-Johns) equation. This function will be discussed further in the Intermolecular energy and Virial calculation section.</p>
+<div class="last highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# SIMULATION CONDITION
+#################################
+Temperature 270.00
+Potential VDW
+LRC true
+Rcut 10
+Exclude 1-4
+</pre></div>
+</div>
+</dd>
+<dt>SHIFT</dt>
+<dd><p class="first">This option forces the potential energy to be zero at Rcut distance. This function will be discussed further in the Intermolecular energy and Virial calculation section.</p>
+<div class="last highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# SIMULATION CONDITION
+#################################
+Temperature 270.00
+Potential SHIFT
+LRC false
+Rcut 10
+Exclude 1-4
+</pre></div>
+</div>
+</dd>
+<dt>SWITCH</dt>
+<dd><p class="first last">This option smoothly forces the potential energy to be zero at Rcut distance and starts modifying the potential at Rswitch distance. Depending on force field type, specific potential function will be applied. These functions will be discussed further in the Intermolecular energy and Virial calculation section.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">Rswitch</span></code></dt>
+<dd><p class="first">In the case of choosing “SWITCH” as potential function, a distance is set in which non-bonded interaction energy is truncated smoothly from to cutoff distance.</p>
+<ul class="last simple">
+<li>Value 1: Double - Define switch distance in angstrom. If the “SWITCH” function is chosen, Rswitch needs to be defined; otherwise, the program will be terminated.</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">ElectroStatic</span></code></dt>
+<dd><p class="first">Considers coulomb interaction or not. This function will be discussed further in the Inter- molecular energy and Virial calculation section.</p>
+<ul class="last">
+<li><p class="first">Value 1: Boolean - True if coulomb interaction needs to be considered and false if not.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If MARTINI force field was used and charged molecule was used in simulation, ElectroStatic needs to be turn on. MARTINI force field uses short range coulomb interaction with constant dielectric 15.0.</p>
+</div>
+</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">Ewald</span></code></dt>
+<dd><p class="first">Considers standard Ewald summation method for electrostatic calculation. This function will be discussed further in the Intermolecular energy and Virial calculation section.</p>
+<ul class="last">
+<li><p class="first">Value 1: Double - True if Ewald summation calculation needs to be considered and false if not.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">By default, <code class="docutils literal notranslate"><span class="pre">ElectroStatic</span></code> will be set to true if Ewald summation method was used to calculate coulomb interaction.</p>
+</div>
+</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">CachedFourier</span></code></dt>
+<dd><p class="first">Considers storing the reciprocal terms for Ewald summation calculation in order to improve the code performance. This option would increase the code performance with the cost of memory usage.</p>
+<ul class="last">
+<li><p class="first">Value 1: Boolean - True to store reciprocal terms of Ewald summation calculation and false if not.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">By default, CachedFourier will be set to true if not value was set.</p>
+</div>
+</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">Tolerance</span></code></dt>
+<dd><p class="first">Specifies the accuracy of the Ewald summation calculation. Ewald separation parameter and number of reciprocal vectors for the Ewald summation are determined based on the accuracy parameter.</p>
+<ul class="last">
+<li><p class="first">Value 1: Double - Sets the accuracy in Ewald summation calculation. A reasonable value for te accuracy is 0.00001.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If “Ewald” was chosen and no value was set for Tolerance, the program will be terminated.</p>
+</div>
+</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">Dielectric</span></code></dt>
+<dd><p class="first">Defines dielectric constant for coulomb interaction in MARTINI force field.</p>
+<ul class="last">
+<li><p class="first">Value 1: Double - Sets dielectric value used in coulomb interaction.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In MARTINI force field, Dielectric needs to be set to 15.0. If MARTINI force field was chosen and if Dielectric was not specified, a default value of 15.0 will be assigned.</p>
+</div>
+</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">PressureCalc</span></code></dt>
+<dd><p class="first">Considers to calculate the pressure or not. If it is set to true, the frequency of pressure calculation need to be set.</p>
+<ul class="last simple">
+<li>Value 1: Boolean - True enabling pressure calculation during the simulation, false disabling pressure calculation.</li>
+<li>Value 2: Ulong - The frequency of calculating the pressure.</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">1-4scaling</span></code></dt>
+<dd><p class="first">Defines constant factor to modify intra-molecule coulomb interaction.</p>
+<ul class="last">
+<li><p class="first">Value 1: Double - A fraction number between 0.0 and 1.0.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">CHARMM force field uses a value between 0.0 and 1.0. In MARTINI force field, it needs to be set to 1.0 because 1-4 interaction will not be modified in this force field.</p>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# SIMULATION CONDITION
+#################################
+ElectroStatic true
+Ewald true
+Tolerance 0.00001
+1-4scaling 0.0
+</pre></div>
+</div>
+</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">RunSteps</span></code></dt>
+<dd><p class="first">Sets the total number of steps to run (one move is performed for each step) (cycles = this value / number of molecules in the system)</p>
+<ul class="last simple">
+<li>Value 1: Ulong - Total run steps</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">EqSteps</span></code></dt>
+<dd><p class="first">Sets the number of steps necessary to equilibrate the system; averaging will begin at this step.</p>
+<ul class="last simple">
+<li>Value 1: Ulong - Equilibration steps</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">AdjSteps</span></code></dt>
+<dd><p class="first">Sets the number of steps per adjustment to the maximum constants associated with each move (e.g. maximum distance in xyz to displace, the maximum volume in <span class="math notranslate nohighlight">\(Å^3\)</span> to swap, etc.)</p>
+<ul class="last">
+<li><p class="first">Value 1: Ulong - Number of steps per move adjustment</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# STEPS
+#################################
+RunSteps 25000000
+EqSteps 5000000
+AdjSteps 1000
+</pre></div>
+</div>
+</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">ChemPot</span></code></dt>
+<dd><p class="first">For Grand Canonical (GC) ensemble runs only: Chemical potential at which simulation is run.</p>
+<ul class="simple">
+<li>Value 1: String - The resname to apply this chemical potential.</li>
+<li>Value 2: Double - The chemical potential value in degrees Kelvin (should be negative).</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For binary systems, include multiple copies of the tag (one per residue kind).</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If there is a molecule kind that cannot be transfer between boxes (in PDB file the beta value is set to 1.00 or 2.00), an arbitrary value (e.g. 0.00) can be assigned to the resname.</p>
+</div>
+<div class="last highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# Mol.  Name Chem.  Pot.  (K)
+#################################
+ChemPot AR -968
+</pre></div>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">Fugacity</span></code></dt>
+<dd><p class="first">For Grand Canonical (GC) ensemble runs only: Fugacity at which simulation is run.</p>
+<ul class="simple">
+<li>Value 1: String - The resname to apply this fugacity.</li>
+<li>Value 2: Double - The fugacity value in bar.</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For binary systems, include multiple copies of the tag (one per residue kind).</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If there is a molecule kind that cannot be transfer between boxes (in PDB file the beta value is set to 1.00 or 2.00) an arbitrary value e.g. 0.00 can be assigned to the resname.</p>
+</div>
+<div class="last highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# Mol.  Name Fugacity (bar)
+#################################
+Fugacity AR 0.1
+Fugacity Si 0.0
+Fugacity O 0.0
+</pre></div>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">DisFreq</span></code></dt>
+<dd><p class="first">Fractional percentage at which displacement move will occur.</p>
+<ul class="last simple">
+<li>Value 1: Double - % Displacement</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">RotFreq</span></code></dt>
+<dd><p class="first">Fractional percentage at which rigid rotation move will occur.</p>
+<ul class="last simple">
+<li>Value 1: Double - % Rotatation</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">IntraSwapFreq</span></code></dt>
+<dd><p class="first">Fractional percentage at which molecule will be removed from a box and inserted into the same box using configurational bias algorithm.</p>
+<ul class="last simple">
+<li>Value 1: Double - % Intra molecule swap</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">RegrowthFreq</span></code></dt>
+<dd><p class="first">Fractional percentage at which part of the molecule will be deleted and then regrown using configurational bias algorithm.</p>
+<ul class="last simple">
+<li>Value 1: Double - % Molecular growth</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">VolFreq</span></code></dt>
+<dd><p class="first">For isobaric-isothermal ensemble and Gibbs ensemble runs only: Fractional percentage at which molecule will be removed from one box and inserted into the other box using configurational bias algorithm.</p>
+<ul class="last simple">
+<li>Value 1: Double - % Volume swaps</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">SwapFreq</span></code></dt>
+<dd><p class="first">For Gibbs and Grand Canonical (GC) ensemble runs only: Fractional percentage at which molecule swap move will occur.</p>
+<ul class="simple">
+<li>Value 1: Double - % Molecule swaps</li>
+</ul>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# MOVE FREQEUNCY
+#################################
+DisFreq 0.49
+RotFreq 0.10
+VolFreq 0.01
+SwapFreq 0.20
+IntraSwapFreq 0.10
+RegrowthFreq 0.10
+</pre></div>
+</div>
+<div class="last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">All move percentages should add up to 1.0; otherwise, the program will terminate.</p>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">useConstantArea</span></code></dt>
+<dd><p class="first">For Isobaric-Isothermal ensemble and Gibbs ensemble runs only: Considers to change the volume of the simulation box by fixing the cross-sectional area (x-y plane).</p>
+<ul class="simple">
+<li>Value 1: Boolean - If true volume will change only in z axis, If false volume will change with constant axis ratio.</li>
+</ul>
+<div class="last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">By default, useConstantArea will be set to false if no value was set. It means, the volume of the box will change in a way to maintain the constant axis ratio.</p>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">FixVolBox0</span></code></dt>
+<dd><p class="first">For adsorption simulation in NPT Gibbs ensemble runs only: Changing the volume of fluid phase (Box 1) to maintain the constant imposed pressure and temperature, while keeping the volume of adsorbed phase (Box 0) fix.</p>
+<ul class="last simple">
+<li>Value 1: Boolean - If true volume of adsorbed phase will remain constant, If false volume of adsorbed phase will change.</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">CellBasisVector</span></code></dt>
+<dd><p class="first">Defines the shape and size of the simulation periodic cell. <code class="docutils literal notranslate"><span class="pre">CellBasisVector1</span></code>, <code class="docutils literal notranslate"><span class="pre">CellBasisVector2</span></code>, <code class="docutils literal notranslate"><span class="pre">CellBasisVector3</span></code> represent the cell basis vector <span class="math notranslate nohighlight">\(a,b,c\)</span>, respectively. This tag may occur multiple times. It occurs once for NVT and NPT, but twice for Gibbs ensemble or GC ensemble.</p>
+<ul class="simple">
+<li>Value 1: Integer - Sets box number (first box is box ‘0’).</li>
+<li>Value 2: Double - x value of cell basis vector in Angstroms.</li>
+<li>Value 3: Double - y value of cell basis vector in Angstroms.</li>
+<li>Value 4: Double - z value of cell basis vector in Angstroms.</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the number of defined boxes were not compatible to simulation type, the program will be terminated.</p>
+</div>
+<p>Example for NVT and NPT ensemble. In this example, each vector is perpendicular to the other two (<span class="math notranslate nohighlight">\(\alpha = 90, \beta = 90, \gamma = 90\)</span>), as indicated by a single x, y, or z value being specified by each and making a rectangular 3-D box:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# BOX DIMENSION #, X, Y, Z
+#################################
+CellBasisVector1 0 40.00 00.00 00.00
+CellBasisVector2 0 00.00 40.00 00.00
+CellBasisVector3 0 00.00 00.00 80.00
+</pre></div>
+</div>
+<p>Example for Gibbs ensemble and GC ensemble ensemble. In this example, In the first box, only vector a and c are perpendicular to each other (<span class="math notranslate nohighlight">\(\alpha = 90, \beta = 90, \gamma = 120\)</span>), and making a non-orthogonal simulation cell with the cell length <span class="math notranslate nohighlight">\(a, b, c\)</span> of 36.91, 39.91, and 76.98 Angstroms, respectively. In the second box, each vector is perpendicular to the other two (<span class="math notranslate nohighlight">\(\alpha = 90, \beta = 90, \gamma = 90\)</span>), as indicated by a single x, y, or z value being specified by each and making a cubic box:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# BOX DIMENSION #, X, Y, Z
+#################################
+CellBasisVector1 0 36.91 00.00 00.00
+CellBasisVector2 0 -18.45 31.96 00.00
+CellBasisVector3 0 00.00 00.00 76.98
+
+CellBasisVector1 1 60.00 00.00 00.00
+CellBasisVector2 1 00.00 60.00 00.00
+CellBasisVector3 1 00.00 00.00 60.00
+</pre></div>
+</div>
+<div class="last admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">In case of <code class="docutils literal notranslate"><span class="pre">Restart</span> <span class="pre">true</span></code>, box dimension does not need to be specified. If it is specified, program will read it but it will be ignored and replaced by the printed cell dimensions and angles in the restart PDB output file from GOMC (<code class="docutils literal notranslate"><span class="pre">OutputName_BOX_0_restart.pdb</span></code> and <code class="docutils literal notranslate"><span class="pre">Output_Name_BOX_1_restart.pdb</span></code>).</p>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">CBMC_First</span></code></dt>
+<dd><p class="first">Number of CBMC trials to choose the first atom position (Lennard-Jones trials for first seed growth).</p>
+<ul class="last simple">
+<li>Value 1: Integer - Number of initial insertion sites to try.</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">CBMC_Nth</span></code></dt>
+<dd><p class="first">Number of CBMC trials to choose the later atom positions (Lennard-Jones trials for first seed growth).</p>
+<ul class="last simple">
+<li>Value 1: Integer - Number of LJ trials for growing later atom positions.</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">CBMC_Ang</span></code></dt>
+<dd><p class="first">Number of CBMC bending angle trials to perform for geometry (per the coupled-decoupled CBMC scheme).</p>
+<ul class="last simple">
+<li>Value 1: Integer - Number of trials per angle.</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">CBMC_Dih</span></code></dt>
+<dd><p class="first">Number of CBMC dihedral angle trials to perform for geometry (per the coupled-decoupled CBMC scheme).</p>
+<ul class="simple">
+<li>Value 1: Integer - Number of trials per dihedral.</li>
+</ul>
+<div class="last highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# CBMC TRIALS
+#################################
+CBMC_First 10
+CBMC_Nth 4
+CBMC_Ang 100
+CBMC_Dih 30
+</pre></div>
+</div>
+</dd>
+</dl>
+</div>
+<div class="section" id="output-controls">
+<h3>Output Controls<a class="headerlink" href="#output-controls" title="Permalink to this headline">¶</a></h3>
+<p>This section contains all the values that control output in the control file. For example, certain variables control the naming of files dumped of the block-averaged thermodynamic variables of interest, the PDB files, etc.</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">OutputName</span></code></dt>
+<dd><p class="first">Unique name for simulation used to name the block average, PDB, and PSF output files.</p>
+<ul class="simple">
+<li>Value 1: String - Unique phhrase to identify this system.</li>
+</ul>
+<div class="last highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# OUTPUT FILE NAME
+#################################
+OutputName ISB T 270 K
+</pre></div>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">CoordinatesFreq</span></code></dt>
+<dd><p class="first">Controls output of PDB file (coordinates). If PDB dumping was enabled, one file for NVT or NPT and two files for Gibbs ensemble or GC ensemble will be dumped into <code class="docutils literal notranslate"><span class="pre">OutputName_BOX_n.pdb</span></code>, where n defines the box number.</p>
+<ul class="simple">
+<li>Value 1: Boolean - “true” enables dumping these files; “false” disables dumping.</li>
+<li>Value 2: Ulong - Steps per dump PDB frame. It should be less than or equal to RunSteps. If this keyword could not be found in configuration file, its value will be assigned a default value to dump 10 frames.</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The PDB file contains an entry for every ATOM, in all boxes read. This allows VMD (which requires a constant number of atoms) to properly parse frames, with a bit of help. Atoms that are not currently in a specific box are given the coordinate (0.00, 0.00, 0.00). The occupancy value corresponds to the box a molecule is currently in (e.g. 0.00 for box 0; 1.00 for box 1).</p>
+</div>
+<div class="last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">At the beginning of simulation, a merged PSF file will be dumped into OutputName merged.pdb, in which all boxes will be dumped. It also contains the topology for every molecule in both boxes, corresponding to the merged PDB format. Loading PDB files into merged PSF file in VMD allows the user to visualize and analyze the results. In addition, this file can be used to load into GOMC once restart simulation was active.</p>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">RestartFreq</span></code></dt>
+<dd><p class="first">Controls the output of the last state of simulation at a specified step in PDB files (coordinates) OutputName BOX n restart.pdb, where n defines the box number. Header part of this file contains important information and will be needed to restart the simulation:</p>
+<ul class="simple">
+<li>Simulation cell dimensions and angles.</li>
+<li>Maximum amount of displacement (Å), rotation (<span class="math notranslate nohighlight">\(\delta\)</span>), and volume (<span class="math notranslate nohighlight">\(Å^3\)</span>) that used in Displacement, Rotation, and Volume move.</li>
+</ul>
+<p>If PDB dumping was enabled, one file for NVT or NPT and two files for Gibbs ensemble or GC ensemble will be dumped.</p>
+<ul class="simple">
+<li>Value 1: Boolean - “true” enables dumping these files; “false” disables dumping.</li>
+<li>Value 2: Ulong - Steps per dump last state of simulation to PDB files. It should be less than or equal to RunSteps. If this keyword could not be found in the configuration file, RestartFreq value will be assigned by default.</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The restart PDB file contains only ATOM that exist in each boxes at specified steps. This allows the user to load this file into GOMC once restart simulation was active.</p>
+</div>
+<div class="last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">CoordinatesFreq must be a common multiple of RestartFreq or vice versa.</p>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">ConsoleFreq</span></code></dt>
+<dd><p class="first">Controls the output to STDIO (“the console”) of messages such as acceptance statistics, and run timing info. In addition, instantaneously-selected thermodynamic properties will be output to this file.</p>
+<ul class="last simple">
+<li>Value 1: Boolean - “true” enables message printing; “false” disables dumping.</li>
+<li>Value 2: Ulong - Number of steps per print. If this keyword could not be found in the configuration file, the value will be assigned by default to dump 1000 output for RunSteps greater than 1000 steps and 100 output for RunSteps less than 1000 steps.</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">BlockAverageFreq</span></code></dt>
+<dd><p class="first">Controls the block averages output of selected thermodynamic properties. Block averages are averages of thermodynamic values of interest for chunks of the simulation (for post-processing of averages or std. dev. in those values).</p>
+<ul class="last simple">
+<li>Value 1: Boolean - “true” enables printing block average; “false” disables it.</li>
+<li>Value 2: Ulong - Number of steps per block-average output file. If this keyword cannot be found in the configuration file, its value will be assigned a default to dump 100 output.</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">HistogramFreq</span></code></dt>
+<dd><p class="first">Controls the histograms. Histograms are a binned listing of observation frequency for a specific thermodynamic variable. In this code, they also control the output of a file containing energy/molecule samples; it only will be used in GC ensemble simulations for histogram reweighting purposes.</p>
+<ul class="simple">
+<li>Value 1: Boolean - “true” enables printing histogram; “false” disables it.</li>
+<li>Value 2: Ulong - Number of steps per histogram output file. If this keyword cannot be found in the configuration file, a value will be assigned by default to dump 1000 output for RunSteps greater than 1000 steps and 100 output for RunSteps less than 1000 steps.</li>
+</ul>
+<div class="last highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# STATISTICS Enable, Freq.
+#################################
+CoordinatesFreq   true 10000000
+RestartFreq       true 1000000
+ConsoleFreq       true 100000
+BlockAverageFreq  true 100000
+HistogramFreq     true 10000
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>The next section controls the output of the energy/molecule sample file and the distribution file for molecule counts, commonly referred to as the “histogram” output. This section is only required if Grand Canonical ensemble simulation was used.</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">DistName</span></code></dt>
+<dd><p class="first">Sets short phrase to naming molecule distribution file.</p>
+<ul class="last simple">
+<li>Value 1: String - Short phrase which will be combined with <em>RunNumber</em> and <em>RunLetter</em> to use in the name of the binned histogram for molecule distribution.</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">HistName</span></code></dt>
+<dd><p class="first">Sets short phrase to naming energy sample file.</p>
+<ul class="last simple">
+<li>Value 1: String - Short phrase, which will be combined with <em>RunNumber</em> and <em>RunLetter</em>, to use in the name of the energy/molecule count sample file.</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">RunNumber</span></code></dt>
+<dd><p class="first">Sets a number, which is a part of <em>DistName</em> and <em>HistName</em> file name.</p>
+<ul class="last simple">
+<li>Value 1: Uint – Run number to be used in the above file names.</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">RunLetter</span></code></dt>
+<dd><p class="first">Sets a letter, which is a part of <em>DistName</em> and <em>HistName</em> file name.</p>
+<ul class="last simple">
+<li>Value 1: Character – Run letter to be used in above file names.</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">SampleFreq</span></code></dt>
+<dd><p class="first">Controls histogram sampling frequency.</p>
+<ul class="simple">
+<li>Value 1: Uint – the number of steps per histogram sample.</li>
+</ul>
+<div class="last highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# OutHistSettings
+#################################
+DistName   dis
+HistName   his
+RunNumber  5
+RunLetter  a
+SampleFreq 200
+</pre></div>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">OutEnergy,</span> <span class="pre">OutPressure,</span> <span class="pre">OutMolNumber,</span> <span class="pre">OutDensity,</span> <span class="pre">OutVolume,</span> <span class="pre">OutSurfaceTension</span></code></dt>
+<dd><p class="first">Enables/Disables for specific kinds of file output for tracked thermodynamic quantities</p>
+<ul class="simple">
+<li>Value 1: Boolean – “true” enables message output of block averages via this tracked parameter (and in some cases such as entry, components); “false” disables it.</li>
+<li>Value 2: Boolean – “true” enables message output of a fluctuation into the console file via this tracked parameter (and in some cases, such as entry, components); “false” disables it.</li>
+</ul>
+<p>The keywords are available for the following ensembles</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Keyword</th>
+<th class="head">NVT</th>
+<th class="head">NPT &amp; Gibbs</th>
+<th class="head">GC</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>OutEnergy</td>
+<td><span class="math notranslate nohighlight">\(\checkmark\)</span></td>
+<td><span class="math notranslate nohighlight">\(\checkmark\)</span></td>
+<td><span class="math notranslate nohighlight">\(\checkmark\)</span></td>
+</tr>
+<tr class="row-odd"><td>OutPressure</td>
+<td><span class="math notranslate nohighlight">\(\checkmark\)</span></td>
+<td><span class="math notranslate nohighlight">\(\checkmark\)</span></td>
+<td><span class="math notranslate nohighlight">\(\checkmark\)</span></td>
+</tr>
+<tr class="row-even"><td>OutMolNumber</td>
+<td>&#160;</td>
+<td><span class="math notranslate nohighlight">\(\checkmark\)</span></td>
+<td><span class="math notranslate nohighlight">\(\checkmark\)</span></td>
+</tr>
+<tr class="row-odd"><td>OutDensity</td>
+<td>&#160;</td>
+<td><span class="math notranslate nohighlight">\(\checkmark\)</span></td>
+<td><span class="math notranslate nohighlight">\(\checkmark\)</span></td>
+</tr>
+<tr class="row-even"><td>OutVolume</td>
+<td>&#160;</td>
+<td><span class="math notranslate nohighlight">\(\checkmark\)</span></td>
+<td><span class="math notranslate nohighlight">\(\checkmark\)</span></td>
+</tr>
+<tr class="row-odd"><td>OutSurfaceTension</td>
+<td><span class="math notranslate nohighlight">\(\checkmark\)</span></td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+</tbody>
+</table>
+<p>Here is an example:</p>
+<div class="last highlight-text notranslate"><div class="highlight"><pre><span></span>#################################
+# ENABLE: BLK AVE., FLUC.
+#################################
+OutEnergy         true true
+OutPressure       true true
+OutMolNum         true true
+OutDensity        true true
+OutVolume         true true
+OutSurfaceTention false false
+</pre></div>
+</div>
+</dd>
+</dl>
 </div>
 </div>
 </div>
@@ -834,6 +1445,8 @@ Note that some tags, or entries for tags, are only used in certain ensembles (e.
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
+        <a href="output_file.html" class="btn btn-neutral float-right" title="GOMC’s Output Files, Terminal Output" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
       
         <a href="compiling.html" class="btn btn-neutral" title="Compiling GOMC" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
@@ -844,7 +1457,7 @@ Note that some tags, or entries for tags, are only used in certain ensembles (e.
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Younes Nejahi.
+        &copy; Copyright 2018, GOMC.
 
     </p>
   </div>

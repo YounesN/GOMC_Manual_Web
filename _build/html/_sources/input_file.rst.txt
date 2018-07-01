@@ -68,7 +68,7 @@ Here are the PDB output of GOMC for the first molecule of isobutane:
 
 The fields seen here in order from left to right are the record type, atom ID, atom name, residue name, residue ID, x, y, and z coordinates, occupancy, temperature factor (called beta), and segment name.
 
-The atom name is "C1" and residue name is "ISB". The PSF file (next section) contains a lookup table of atoms. These contain the atom name from the PDB and the name of the atom kind in the parameter file it corresponds to. As multiple different atom names will all correspond to the same parameter, these can be viewed "atom aliases" of sorts. The chain letter (in this case ‘A’) is sometimes used when packing a number of PDBs into a single PDB file.
+The atom name is "C1" and residue name is "ISB". The PSF file (next section) contains a lookup table of atoms. These contain the atom name from the PDB and the name of the atom kind in the parameter file it corresponds to. As multiple different atom names will all correspond to the same parameter, these can be viewed "atom aliases" of sorts. The chain letter (in this case 'A') is sometimes used when packing a number of PDBs into a single PDB file.
 
 .. Important::
 
@@ -229,7 +229,7 @@ The PSF file is typically generated using PSFGen. It is convenient to make a scr
   writepsf ./STEP3 START ISB sys BOX 0.psf
   writepdb ./STEP3 START ISB sys BOX 0.pdb
 
-Typically, one script is run per box to generate a finalized PDB/PSF for that box. The script requires one additional file, the NAMD-style topology file. While GOMC does not directly read or interact with this file, it’s typically used to generate the PSF and, hence, is considered one of the integral file types. It will be briefly discussed in the following section.
+Typically, one script is run per box to generate a finalized PDB/PSF for that box. The script requires one additional file, the NAMD-style topology file. While GOMC does not directly read or interact with this file, it's typically used to generate the PSF and, hence, is considered one of the integral file types. It will be briefly discussed in the following section.
 
 Topology File
 -------------
@@ -242,7 +242,7 @@ This is followed by a series of residues, which tell PSFGen what atoms are bonde
 - A section of lines starting with the word BOND contains pairs of bonded atoms (typically 3 per line)
 - A closing section with instructions for PSFGen.
 
-Here’s an example of topology file for isobutane:
+Here's an example of topology file for isobutane:
 
 .. code-block:: text
 
@@ -305,7 +305,7 @@ CHARMM contains a widely used model for describing energies in Monte Carlo and m
 
 .. _here: http://www.charmmtutorial.org/index.php/The_Energy_Function
 
-Here’s the basic CHARMM contributions that are supported in GOMC:
+Here's the basic CHARMM contributions that are supported in GOMC:
 
 .. math::
 
@@ -318,7 +318,7 @@ As seen above, the following are recognized, read and used:
 
 - ``BONDS``
   - Quadratic expression describing bond stretching based on bond length (b) in Angstrom
-  – Typically, it is ignored as bonds are rigid for Monte Carlo simulations. To specify that it is to be ignored, put a very large value i.e. “999999999999” for :math:`K_b`.
+  – Typically, it is ignored as bonds are rigid for Monte Carlo simulations. To specify that it is to be ignored, put a very large value i.e. "999999999999" for :math:`K_b`.
 
   .. Note:: GOMC does not sample bond stretch.
 
@@ -327,7 +327,7 @@ As seen above, the following are recognized, read and used:
     Oscillations about the equilibrium bond length
 
 - ``ANGLES``
-  - Describe the conformational lbehavior of an angle (:math:`\delta`) between three atoms, one of which is shared branch point to the other two. To fix any angle and ignore the related angle energy, put a very large value i.e. “999999999999” for :math:`K_\delta`.
+  - Describe the conformational lbehavior of an angle (:math:`\delta`) between three atoms, one of which is shared branch point to the other two. To fix any angle and ignore the related angle energy, put a very large value i.e. "999999999999" for :math:`K_\delta`.
 
   .. figure:: _static/angle.png
 
@@ -403,7 +403,7 @@ Some CHARMM ANGLES section entries include ``Urey-Bradley`` potentials (:math:`K
 DIHEDRALS
 ^^^^^^^^^
 
-The final major bonded interactions section of the CHARMM compliant parameter file are the DIHEDRALS. Each dihedral is composed of a dihedral series of 1 or more terms. Often, there are 4 to 6 terms in a dihedral. Angles for the dihedrals’ deltas are given in degrees.
+The final major bonded interactions section of the CHARMM compliant parameter file are the DIHEDRALS. Each dihedral is composed of a dihedral series of 1 or more terms. Often, there are 4 to 6 terms in a dihedral. Angles for the dihedrals' deltas are given in degrees.
 
 Since isobutane has no dihedral, here are the parameters pertaining to 2,3-dimethylbutane:
 
@@ -435,7 +435,7 @@ Energy parameters used to describe out-of-plane rocking are currently read, but 
 NONBONDED
 ^^^^^^^^^
 
-The next section of the CHARMM style parameter file is the NONBONDED. In order to use TraPPE this section of the CHARMM compliant file is critical. Here’s an example with our isobutane potential model:
+The next section of the CHARMM style parameter file is the NONBONDED. In order to use TraPPE this section of the CHARMM compliant file is critical. Here's an example with our isobutane potential model:
 
 .. code-block:: text
 
@@ -485,21 +485,21 @@ The most frequently used section of the exotic files in the Mie potential sectio
   !V(mie) = 4*eps*((sig ij/r ij)^n-(sig ij/r ij)^6)
   !
   !atom eps sig n eps,1-4 sig,1-4 n,1-4
-  CH4 161.00 3.740 14 0.0 0.0 0.0 ! Potoff, et al. ’09
-  CH3 121.25 3.783 16 0.0 0.0 0.0 ! Potoff, et al. ’09
-  CH2  61.00 3.990 16 0.0 0.0 0.0 ! Potoff, et al. ’09
+  CH4 161.00 3.740 14 0.0 0.0 0.0 ! Potoff, et al. '09
+  CH3 121.25 3.783 16 0.0 0.0 0.0 ! Potoff, et al. '09
+  CH2  61.00 3.990 16 0.0 0.0 0.0 ! Potoff, et al. '09
 
 .. note:: Although the units (Angstroms) are the same, the exotic file uses :math:`\sigma`, not the :math:`R_{min}` used by CHARMM. The energy in the exotic file are expressed in Kelvin (K), as this is the standard convention in the literature.
 
 Control File (\*.conf)
 ----------------------
-The control file is GOMC’s proprietary input file. It contains key settings. The settings generally fall under three categories:
+The control file is GOMC's proprietary input file. It contains key settings. The settings generally fall under three categories:
 
 - Input/Simulation Setup
 - System Settings for During Run
 - Output Settings
 
-.. note:: The control file is designed to recognize logic values, such as “yes/true/on” or “no/false/off”.
+.. note:: The control file is designed to recognize logic values, such as "yes/true/on" or "no/false/off".
 
 Input/Simulation Setup
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -674,3 +674,489 @@ System Settings for During Run Setup
 This section contains all the variables not involved in the output of data during the simulation, or in the reading of input files at the start of the simulation. In other words, it contains settings related to the moves, the thermodynamic constants (based on choice of ensemble), and the length of the simulation.
 Note that some tags, or entries for tags, are only used in certain ensembles (e.g. Gibbs ensemble). These cases are denoted with colored text.
 
+``GEMC``
+  *(For Gibbs Ensemble runs only)* Defines the type of Gibbs Ensemble simulation you want to run. If neglected in Gibbs Ensemble, it simply defaults to const volume (NVT) Gibbs Ensemble.
+
+  - Value 1: String - Allows you to pick between isovolumetric ("NVT") and isobaric ("NPT") Gibbs ensemble simulations.
+
+  .. code-block:: text
+
+    #################################
+    # GEMC TYPE (DEFAULT IS NVT GEMC) 
+    #################################
+    GEMC NVT
+
+``Pressure``
+  If "NPT" simulation is chosen, imposed pressure (in bar) needs to be specified; otherwise, the program will terminate.
+  
+  - Value 1: Double - Constant pressure in bars.
+
+  .. code-block:: text
+
+    #################################
+    # GEMC TYPE (DEFAULT IS NVT GEMC) 
+    #################################
+    GEMC NPT
+    Pressure 5.76
+
+``Temperature``
+  Sets the temperature at which the system will run.
+
+  - Value 1: Double - Constant temperature of simulation in degrees Kelvin.
+
+``Rcut``
+  Sets a specific radius that non-bonded interaction energy and force will be considered and calculated using defined potential function.
+
+  - Value 1: Double - The distance to truncate the Lennard-Jones potential at.
+
+``RcutLow``
+  Sets a specific minimum possible in angstrom that reject any move that place any atom closer than specified distance.
+
+  - Value 1: Double - The minimum possible distance between any atoms.
+
+``LRC``
+  Defines whether or not long range corrections are used.
+  
+  - Value 1: Boolean - True to consider long range correction. In case of using "SHIFT" or "SWITCH" potential functions, LRC will be ignored.
+
+``Exclude``
+  Defines which pairs of bonded atoms should be excluded from non-bonded interactions.
+
+  - Value 1: String - Allows you to choose between "1-2", "1-3", and "1-4".
+  
+    1-2
+      All interactions pairs of bonded atoms, except the ones that separated with one bond, will be considered and modified using 1-4 parameters defined in parameter file.
+    1-3
+      All interaction pairs of bonded atoms, except the ones that separated with one or two bonds, will be considered and modified using 1-4 parameters defined in parameter file.
+    1-4
+      All interaction pairs of bonded atoms, except the ones that separated with one, two or three bonds, will be considered using non-bonded parameters defined in parameter file.
+      
+    .. note:: The default value is "1-4".
+
+    .. note:: In CHARMM force field, the 1-4 interaction needs to be considered. Choosing "Exclude 1-3" will modify 1-4 interaction based on 1-4 parameter in parameter file. If a kind force field is used, where 1-4 interaction needs to be ignored, such as TraPPE, either "exclude 1-4" needs to be chosen or 1-4 parameter needs to be assigned a value of zero in the parameter file.
+
+``Potential``
+  Defines the potential function type to calculate non-bonded interaction energy and force between atoms.
+
+  - Value 1: String - Allows you to pick between "VDW", "SHIFT" and "SWITCH".
+    
+    VDW
+      Nonbonded interaction energy and force calculated based on n-6 (Lennard-Johns) equation. This function will be discussed further in the Intermolecular energy and Virial calculation section.
+
+      .. code-block:: text
+
+        #################################
+        # SIMULATION CONDITION
+        #################################
+        Temperature 270.00
+        Potential VDW
+        LRC true
+        Rcut 10
+        Exclude 1-4
+
+    SHIFT
+      This option forces the potential energy to be zero at Rcut distance. This function will be discussed further in the Intermolecular energy and Virial calculation section.
+
+      .. code-block:: text
+
+        #################################
+        # SIMULATION CONDITION
+        #################################
+        Temperature 270.00
+        Potential SHIFT
+        LRC false
+        Rcut 10
+        Exclude 1-4
+
+    SWITCH
+      This option smoothly forces the potential energy to be zero at Rcut distance and starts modifying the potential at Rswitch distance. Depending on force field type, specific potential function will be applied. These functions will be discussed further in the Intermolecular energy and Virial calculation section.
+
+``Rswitch``
+  In the case of choosing "SWITCH" as potential function, a distance is set in which non-bonded interaction energy is truncated smoothly from to cutoff distance.
+
+  - Value 1: Double - Define switch distance in angstrom. If the "SWITCH" function is chosen, Rswitch needs to be defined; otherwise, the program will be terminated.
+
+``ElectroStatic``
+  Considers coulomb interaction or not. This function will be discussed further in the Inter- molecular energy and Virial calculation section.
+
+  - Value 1: Boolean - True if coulomb interaction needs to be considered and false if not.
+
+    .. note:: If MARTINI force field was used and charged molecule was used in simulation, ElectroStatic needs to be turn on. MARTINI force field uses short range coulomb interaction with constant dielectric 15.0.
+
+``Ewald``
+  Considers standard Ewald summation method for electrostatic calculation. This function will be discussed further in the Intermolecular energy and Virial calculation section.
+
+  - Value 1: Double - True if Ewald summation calculation needs to be considered and false if not.
+
+    .. note:: By default, ``ElectroStatic`` will be set to true if Ewald summation method was used to calculate coulomb interaction.
+
+``CachedFourier``
+  Considers storing the reciprocal terms for Ewald summation calculation in order to improve the code performance. This option would increase the code performance with the cost of memory usage.
+
+  - Value 1: Boolean - True to store reciprocal terms of Ewald summation calculation and false if not.
+
+    .. note:: By default, CachedFourier will be set to true if not value was set.
+
+``Tolerance``
+  Specifies the accuracy of the Ewald summation calculation. Ewald separation parameter and number of reciprocal vectors for the Ewald summation are determined based on the accuracy parameter.
+
+  - Value 1: Double - Sets the accuracy in Ewald summation calculation. A reasonable value for te accuracy is 0.00001.
+
+    .. note:: If "Ewald" was chosen and no value was set for Tolerance, the program will be terminated.
+    
+``Dielectric``
+  Defines dielectric constant for coulomb interaction in MARTINI force field.
+
+  - Value 1: Double - Sets dielectric value used in coulomb interaction.
+
+    .. note:: In MARTINI force field, Dielectric needs to be set to 15.0. If MARTINI force field was chosen and if Dielectric was not specified, a default value of 15.0 will be assigned.
+
+``PressureCalc``
+  Considers to calculate the pressure or not. If it is set to true, the frequency of pressure calculation need to be set.
+
+  - Value 1: Boolean - True enabling pressure calculation during the simulation, false disabling pressure calculation.
+
+  - Value 2: Ulong - The frequency of calculating the pressure.
+  
+``1-4scaling``
+  Defines constant factor to modify intra-molecule coulomb interaction.
+
+  - Value 1: Double - A fraction number between 0.0 and 1.0.
+  
+    .. note:: CHARMM force field uses a value between 0.0 and 1.0. In MARTINI force field, it needs to be set to 1.0 because 1-4 interaction will not be modified in this force field.
+
+    .. code-block:: text
+
+      #################################
+      # SIMULATION CONDITION
+      #################################
+      ElectroStatic true
+      Ewald true
+      Tolerance 0.00001
+      1-4scaling 0.0
+
+``RunSteps``
+  Sets the total number of steps to run (one move is performed for each step) (cycles = this value / number of molecules in the system)
+  
+  - Value 1: Ulong - Total run steps
+
+``EqSteps``
+  Sets the number of steps necessary to equilibrate the system; averaging will begin at this step.
+
+  - Value 1: Ulong - Equilibration steps
+
+``AdjSteps``
+  Sets the number of steps per adjustment to the maximum constants associated with each move (e.g. maximum distance in xyz to displace, the maximum volume in :math:`Å^3` to swap, etc.)
+  
+  - Value 1: Ulong - Number of steps per move adjustment
+
+    .. code-block:: text
+
+      #################################
+      # STEPS
+      #################################
+      RunSteps 25000000
+      EqSteps 5000000
+      AdjSteps 1000
+
+``ChemPot``
+  For Grand Canonical (GC) ensemble runs only: Chemical potential at which simulation is run.
+
+  - Value 1: String - The resname to apply this chemical potential.
+  - Value 2: Double - The chemical potential value in degrees Kelvin (should be negative).
+
+  .. note:: For binary systems, include multiple copies of the tag (one per residue kind).
+
+  .. note:: If there is a molecule kind that cannot be transfer between boxes (in PDB file the beta value is set to 1.00 or 2.00), an arbitrary value (e.g. 0.00) can be assigned to the resname.
+
+  .. code-block:: text
+
+    #################################
+    # Mol.  Name Chem.  Pot.  (K)
+    #################################
+    ChemPot AR -968
+
+``Fugacity``
+  For Grand Canonical (GC) ensemble runs only: Fugacity at which simulation is run.
+  
+  - Value 1: String - The resname to apply this fugacity.
+  - Value 2: Double - The fugacity value in bar.
+
+  .. note:: For binary systems, include multiple copies of the tag (one per residue kind).
+  
+  .. note:: If there is a molecule kind that cannot be transfer between boxes (in PDB file the beta value is set to 1.00 or 2.00) an arbitrary value e.g. 0.00 can be assigned to the resname.
+
+  .. code-block:: text
+
+    #################################
+    # Mol.  Name Fugacity (bar)
+    #################################
+    Fugacity AR 0.1
+    Fugacity Si 0.0
+    Fugacity O 0.0
+
+``DisFreq``
+  Fractional percentage at which displacement move will occur.
+  
+  - Value 1: Double - % Displacement
+
+``RotFreq``
+  Fractional percentage at which rigid rotation move will occur.
+  
+  - Value 1: Double - % Rotatation
+
+``IntraSwapFreq``
+  Fractional percentage at which molecule will be removed from a box and inserted into the same box using configurational bias algorithm.
+
+  - Value 1: Double - % Intra molecule swap
+
+``RegrowthFreq``
+  Fractional percentage at which part of the molecule will be deleted and then regrown using configurational bias algorithm.
+
+  - Value 1: Double - % Molecular growth
+
+``VolFreq``
+  For isobaric-isothermal ensemble and Gibbs ensemble runs only: Fractional percentage at which molecule will be removed from one box and inserted into the other box using configurational bias algorithm.
+
+  - Value 1: Double - % Volume swaps
+
+``SwapFreq``
+  For Gibbs and Grand Canonical (GC) ensemble runs only: Fractional percentage at which molecule swap move will occur.
+
+  - Value 1: Double - % Molecule swaps
+
+  .. code-block:: text
+
+    #################################
+    # MOVE FREQEUNCY
+    #################################
+    DisFreq 0.49
+    RotFreq 0.10
+    VolFreq 0.01
+    SwapFreq 0.20
+    IntraSwapFreq 0.10
+    RegrowthFreq 0.10
+
+  .. note:: All move percentages should add up to 1.0; otherwise, the program will terminate.
+
+``useConstantArea``
+  For Isobaric-Isothermal ensemble and Gibbs ensemble runs only: Considers to change the volume of the simulation box by fixing the cross-sectional area (x-y plane).
+
+  - Value 1: Boolean - If true volume will change only in z axis, If false volume will change with constant axis ratio.
+
+  .. note:: By default, useConstantArea will be set to false if no value was set. It means, the volume of the box will change in a way to maintain the constant axis ratio.
+
+``FixVolBox0``
+  For adsorption simulation in NPT Gibbs ensemble runs only: Changing the volume of fluid phase (Box 1) to maintain the constant imposed pressure and temperature, while keeping the volume of adsorbed phase (Box 0) fix.
+
+  - Value 1: Boolean - If true volume of adsorbed phase will remain constant, If false volume of adsorbed phase will change.
+
+``CellBasisVector``
+  Defines the shape and size of the simulation periodic cell. ``CellBasisVector1``, ``CellBasisVector2``, ``CellBasisVector3`` represent the cell basis vector :math:`a,b,c`, respectively. This tag may occur multiple times. It occurs once for NVT and NPT, but twice for Gibbs ensemble or GC ensemble.
+
+  - Value 1: Integer - Sets box number (first box is box '0'). 
+  - Value 2: Double - x value of cell basis vector in Angstroms.
+  - Value 3: Double - y value of cell basis vector in Angstroms.
+  - Value 4: Double - z value of cell basis vector in Angstroms.
+
+  .. note:: If the number of defined boxes were not compatible to simulation type, the program will be terminated.
+
+  Example for NVT and NPT ensemble. In this example, each vector is perpendicular to the other two (:math:`\alpha = 90, \beta = 90, \gamma = 90`), as indicated by a single x, y, or z value being specified by each and making a rectangular 3-D box:
+
+  .. code-block:: text
+
+    #################################
+    # BOX DIMENSION #, X, Y, Z
+    #################################
+    CellBasisVector1 0 40.00 00.00 00.00
+    CellBasisVector2 0 00.00 40.00 00.00
+    CellBasisVector3 0 00.00 00.00 80.00
+
+  Example for Gibbs ensemble and GC ensemble ensemble. In this example, In the first box, only vector a and c are perpendicular to each other (:math:`\alpha = 90, \beta = 90, \gamma = 120`), and making a non-orthogonal simulation cell with the cell length :math:`a, b, c` of 36.91, 39.91, and 76.98 Angstroms, respectively. In the second box, each vector is perpendicular to the other two (:math:`\alpha = 90, \beta = 90, \gamma = 90`), as indicated by a single x, y, or z value being specified by each and making a cubic box:
+
+  .. code-block:: text
+  
+    #################################
+    # BOX DIMENSION #, X, Y, Z
+    #################################
+    CellBasisVector1 0 36.91 00.00 00.00
+    CellBasisVector2 0 -18.45 31.96 00.00
+    CellBasisVector3 0 00.00 00.00 76.98
+    
+    CellBasisVector1 1 60.00 00.00 00.00
+    CellBasisVector2 1 00.00 60.00 00.00
+    CellBasisVector3 1 00.00 00.00 60.00
+
+  .. warning:: In case of ``Restart true``, box dimension does not need to be specified. If it is specified, program will read it but it will be ignored and replaced by the printed cell dimensions and angles in the restart PDB output file from GOMC (``OutputName_BOX_0_restart.pdb`` and ``Output_Name_BOX_1_restart.pdb``).
+
+``CBMC_First``
+  Number of CBMC trials to choose the first atom position (Lennard-Jones trials for first seed growth).
+
+  - Value 1: Integer - Number of initial insertion sites to try.
+
+``CBMC_Nth``
+  Number of CBMC trials to choose the later atom positions (Lennard-Jones trials for first seed growth).
+
+  - Value 1: Integer - Number of LJ trials for growing later atom positions.
+
+``CBMC_Ang``
+  Number of CBMC bending angle trials to perform for geometry (per the coupled-decoupled CBMC scheme).
+
+  - Value 1: Integer - Number of trials per angle.
+
+``CBMC_Dih``
+  Number of CBMC dihedral angle trials to perform for geometry (per the coupled-decoupled CBMC scheme).
+
+  - Value 1: Integer - Number of trials per dihedral.
+
+  .. code-block:: text
+
+    #################################
+    # CBMC TRIALS
+    #################################
+    CBMC_First 10
+    CBMC_Nth 4
+    CBMC_Ang 100
+    CBMC_Dih 30
+
+Output Controls
+^^^^^^^^^^^^^^^
+
+This section contains all the values that control output in the control file. For example, certain variables control the naming of files dumped of the block-averaged thermodynamic variables of interest, the PDB files, etc.
+
+``OutputName``
+  Unique name for simulation used to name the block average, PDB, and PSF output files.
+  
+  - Value 1: String - Unique phhrase to identify this system.
+
+  .. code-block:: text
+
+    #################################
+    # OUTPUT FILE NAME
+    #################################
+    OutputName ISB T 270 K
+
+``CoordinatesFreq``
+  Controls output of PDB file (coordinates). If PDB dumping was enabled, one file for NVT or NPT and two files for Gibbs ensemble or GC ensemble will be dumped into ``OutputName_BOX_n.pdb``, where n defines the box number.
+
+  - Value 1: Boolean - "true" enables dumping these files; "false" disables dumping.
+
+  - Value 2: Ulong - Steps per dump PDB frame. It should be less than or equal to RunSteps. If this keyword could not be found in configuration file, its value will be assigned a default value to dump 10 frames.
+
+  .. note:: The PDB file contains an entry for every ATOM, in all boxes read. This allows VMD (which requires a constant number of atoms) to properly parse frames, with a bit of help. Atoms that are not currently in a specific box are given the coordinate (0.00, 0.00, 0.00). The occupancy value corresponds to the box a molecule is currently in (e.g. 0.00 for box 0; 1.00 for box 1).
+
+  .. note:: At the beginning of simulation, a merged PSF file will be dumped into OutputName merged.pdb, in which all boxes will be dumped. It also contains the topology for every molecule in both boxes, corresponding to the merged PDB format. Loading PDB files into merged PSF file in VMD allows the user to visualize and analyze the results. In addition, this file can be used to load into GOMC once restart simulation was active.
+
+``RestartFreq``
+  Controls the output of the last state of simulation at a specified step in PDB files (coordinates) OutputName BOX n restart.pdb, where n defines the box number. Header part of this file contains important information and will be needed to restart the simulation:
+
+  - Simulation cell dimensions and angles.
+  - Maximum amount of displacement (Å), rotation (:math:`\delta`), and volume (:math:`Å^3`) that used in Displacement, Rotation, and Volume move.
+  
+  If PDB dumping was enabled, one file for NVT or NPT and two files for Gibbs ensemble or GC ensemble will be dumped.
+
+  - Value 1: Boolean - "true" enables dumping these files; "false" disables dumping.
+  - Value 2: Ulong - Steps per dump last state of simulation to PDB files. It should be less than or equal to RunSteps. If this keyword could not be found in the configuration file, RestartFreq value will be assigned by default.
+
+  .. note:: The restart PDB file contains only ATOM that exist in each boxes at specified steps. This allows the user to load this file into GOMC once restart simulation was active.
+  .. note:: CoordinatesFreq must be a common multiple of RestartFreq or vice versa.
+
+``ConsoleFreq``
+  Controls the output to STDIO ("the console") of messages such as acceptance statistics, and run timing info. In addition, instantaneously-selected thermodynamic properties will be output to this file.
+
+  - Value 1: Boolean - "true" enables message printing; "false" disables dumping.
+  - Value 2: Ulong - Number of steps per print. If this keyword could not be found in the configuration file, the value will be assigned by default to dump 1000 output for RunSteps greater than 1000 steps and 100 output for RunSteps less than 1000 steps.
+
+``BlockAverageFreq``
+  Controls the block averages output of selected thermodynamic properties. Block averages are averages of thermodynamic values of interest for chunks of the simulation (for post-processing of averages or std. dev. in those values).
+
+  - Value 1: Boolean - "true" enables printing block average; "false" disables it.
+  - Value 2: Ulong - Number of steps per block-average output file. If this keyword cannot be found in the configuration file, its value will be assigned a default to dump 100 output.
+
+``HistogramFreq``
+  Controls the histograms. Histograms are a binned listing of observation frequency for a specific thermodynamic variable. In this code, they also control the output of a file containing energy/molecule samples; it only will be used in GC ensemble simulations for histogram reweighting purposes.
+
+  - Value 1: Boolean - "true" enables printing histogram; "false" disables it.
+  - Value 2: Ulong - Number of steps per histogram output file. If this keyword cannot be found in the configuration file, a value will be assigned by default to dump 1000 output for RunSteps greater than 1000 steps and 100 output for RunSteps less than 1000 steps.
+
+  .. code-block:: text
+
+    #################################
+    # STATISTICS Enable, Freq.
+    #################################
+    CoordinatesFreq   true 10000000
+    RestartFreq       true 1000000
+    ConsoleFreq       true 100000
+    BlockAverageFreq  true 100000
+    HistogramFreq     true 10000
+
+The next section controls the output of the energy/molecule sample file and the distribution file for molecule counts, commonly referred to as the "histogram" output. This section is only required if Grand Canonical ensemble simulation was used.
+
+``DistName``
+  Sets short phrase to naming molecule distribution file.
+
+  - Value 1: String - Short phrase which will be combined with *RunNumber* and *RunLetter* to use in the name of the binned histogram for molecule distribution.
+  
+``HistName``
+  Sets short phrase to naming energy sample file.
+
+  - Value 1: String - Short phrase, which will be combined with *RunNumber* and *RunLetter*, to use in the name of the energy/molecule count sample file.
+
+``RunNumber``
+  Sets a number, which is a part of *DistName* and *HistName* file name.
+  
+  - Value 1: Uint – Run number to be used in the above file names.
+
+``RunLetter``
+  Sets a letter, which is a part of *DistName* and *HistName* file name.
+  
+  - Value 1: Character – Run letter to be used in above file names.
+
+``SampleFreq``
+  Controls histogram sampling frequency.
+
+  - Value 1: Uint – the number of steps per histogram sample.
+
+  .. code-block:: text
+
+    #################################
+    # OutHistSettings
+    #################################
+    DistName   dis
+    HistName   his
+    RunNumber  5
+    RunLetter  a
+    SampleFreq 200
+    
+``OutEnergy, OutPressure, OutMolNumber, OutDensity, OutVolume, OutSurfaceTension``
+  Enables/Disables for specific kinds of file output for tracked thermodynamic quantities
+
+  - Value 1: Boolean – "true" enables message output of block averages via this tracked parameter (and in some cases such as entry, components); "false" disables it.
+  - Value 2: Boolean – "true" enables message output of a fluctuation into the console file via this tracked parameter (and in some cases, such as entry, components); "false" disables it.
+
+  The keywords are available for the following ensembles
+
+  ====================  ====================  ====================  ====================
+  Keyword               NVT                   NPT & Gibbs           GC
+  ====================  ====================  ====================  ====================
+  OutEnergy             :math:`\checkmark`    :math:`\checkmark`    :math:`\checkmark`
+  OutPressure           :math:`\checkmark`    :math:`\checkmark`    :math:`\checkmark`
+  OutMolNumber                                :math:`\checkmark`    :math:`\checkmark`
+  OutDensity                                  :math:`\checkmark`    :math:`\checkmark`
+  OutVolume                                   :math:`\checkmark`    :math:`\checkmark`
+  OutSurfaceTension     :math:`\checkmark`                                            
+  ====================  ====================  ====================  ====================
+
+  Here is an example:
+  
+  .. code-block:: text
+
+    #################################
+    # ENABLE: BLK AVE., FLUC.
+    #################################
+    OutEnergy         true true
+    OutPressure       true true
+    OutMolNum         true true
+    OutDensity        true true
+    OutVolume         true true
+    OutSurfaceTention false false
