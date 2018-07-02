@@ -19,3 +19,6 @@ Welcome to GOMC's documentation!
    input_file
    output_file
    putting_all_together
+   ch10
+   electrostatic
+   help
