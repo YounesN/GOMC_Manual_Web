@@ -131,7 +131,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'GOMC.tex', u'GOMC Documentation',
-     u'Younes Nejahi', 'manual'),
+     u'GOMC Development Group', 'manual'),
 ]
 
 
