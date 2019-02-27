@@ -5,7 +5,10 @@ GPU Optimized Monte Carlo (GOMC) is open-source software for simulating many-bod
 
 GOMC employs widely-used simulation file types (PDB, PSF, CHARMM-style parameter file) and supports polar and non-polar linear and branched molecules. GOMC can be used to study vapor-liquid and liquid-liquid equilibria, adsorption in porous materials, surfactant self-assembly, and condensed phase structure for complex molecules.
 
-GOMC currently is capable of simulating systems in the following ensembles:
+To cite GOMC software, please refer to `GOMC paper <https://www.sciencedirect.com/science/article/pii/S2352711018301171>`_.
+
+GOMC supported ensembles:
+-------------------------
 
 - Canonical (NVT)
 - Isobaric-isothermal (NPT)
@@ -13,15 +16,20 @@ GOMC currently is capable of simulating systems in the following ensembles:
 - Constant volume Gibbs (NVT-Gibbs) 
 - Constant pressure Gibbs (NPT-Gibbs)
 
-GOMC supports the following Monte Carlo moves:
+GOMC supported Monte Carlo moves:
+---------------------------------
 - Rigid-body displacement
 - Rigid-body rotation
 - Regrowth using coupled-decoupled configurational-bias
+- Crankshaft using coupled-decoupled configurational-bias
 - Intra-box swap using coupled-decoupled configurational-bias
+- Intra-box `molecular exchange Monte Carlo <https://aip.scitation.org/doi/abs/10.1063/1.5025184>`_
 - Inter-box swap using coupled-decoupled configurational-bias
+- Inter-box `molecular exchange monter carlo <https://www.sciencedirect.com/science/article/pii/S0378381218305351>`_ 
 - Volume exchange (both isotropic and anisotropic)
 
-GOMC supports various all-atom, united-atom, and coarse grained force fields:
+GOMC supported force fields:
+----------------------------
 - OPLS
 - CHARMM 
 - TraPPE

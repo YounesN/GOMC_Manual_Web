@@ -23,21 +23,25 @@ http://www.wwpdb.org/documentation/file-format-content/format33/sect9.html#ATOM
 PDB contains foure major parts; ``REMARK``, ``CRYST1``, ``ATOM``, and ``END``. Here is the definition of each field and how GOMC is using them to get the information it requires.
 
 - ``REMARK``:
-  This header records present experimental  details, annotations, comments, and information not included in other records (http://www.wwpdb.org/documentation/file-format-content/format33/ sect2.html#HEADER). However, GOMC uses this header to print simulation informations.
+  This header records present experimental  details, annotations, comments, and information not included in other records (for more information, `click here <http://www.wwpdb.org/documentation/file-format-content/format33/sect2.html#HEADER>`_). 
+  
+  However, GOMC uses this header to print simulation informations.
 
   - **Max Displacement** (Å)
   - **Max Rotation** (Degree)
   - **Max volume exchange** (:math:`Å^3`)
   - **Monte Carlo Steps** (MC)
 
+
 - ``CRYST1``:
-  This header records the unit cell dimension parameters (http://www.wwpdb.org/documentation/file-format-content/format33/sect8.html#CRYST1).
+  This header records the unit `cell dimension parameters <http://www.wwpdb.org/documentation/file-format-content/format33/sect8.html#CRYST1>`_.
 
   - **Lattice constant**: a,b,c (Å)
   - **Lattice angles**: :math:`\alpha, \beta, \gamma` (Degree)
 
+
 - ``ATOM``:
-  The ATOM records present the atomic coordinates for standard amino acids and nucleotides. They also present the occupancy and temperature factor for each atom (http://www.wwpdb.org/documentation/file-format-content/format33/sect9.html#ATOM).
+  The `ATOM <http://www.wwpdb.org/documentation/file-format-content/format33/sect9.html#ATOM>`_ records present the atomic coordinates for standard amino acids and nucleotides. They also present the occupancy and temperature factor for each atom.
 
   - **ATOM**: Record name
   - **serial**: Atom serial number.
@@ -50,6 +54,7 @@ PDB contains foure major parts; ``REMARK``, ``CRYST1``, ``ATOM``, and ``END``. H
   - **z**: Coordinates for Z (Å).
   - **occupancy**: GOMC uses to define which atoms belong to which box.
   - **beta**: Beta or Temperature factor. GOMC uses this value to define the mobility of the atoms. element: Element symbol.
+
 
 - ``END``:
   A frame in the PDB file is terminated with the keyword.
@@ -76,9 +81,9 @@ The atom name is "C1" and residue name is "ISB". The PSF file (next section) con
   - For atoms not currently in a box, the coordinates are set to ``< 0.00, 0.00, 0.00 >``. The occupancy is commonly just set to "1.00" and is left unused by many codes. We recycle this legacy parameter by using it to denote, in our output PDBs, the box a molecule is in (box 0 occupancy=0.00 ; box 1 occupancy=1.00)
   - The beta value in GOMC code is used to define the mobility of the molecule.
 
-    - Beta = 0.00: molecule can move and transfer within and between boxes.
-    - Beta = 1.00: molecule is fixed in its position.
-    - Beta = 2.00: molecule can move within the box but cannot be transferred between boxes.
+    - ``Beta = 0.00``: molecule can move and transfer within and between boxes.
+    - ``Beta = 1.00``: molecule is fixed in its position.
+    - ``Beta = 2.00``: molecule can move within the box but cannot be transferred between boxes.
 
 Generating PDB file
 ^^^^^^^^^^^^^^^^^^^
@@ -106,17 +111,17 @@ With that overview of the format in mind, the following steps describe how a PDB
   
   http://webbook.nist.gov/chemistry/
 
-3. After packing is determined, a basic pack can be performed with a Packmol script. Here is one example:
+3. After packing is determined, a basic pack can be performed with a Packmol script. Here is the example of packing 1000 isobutane in 70 A cubic box:
 
   .. code-block:: text
 
-    tolerance 3.0
-    filetype pdb
-    output STEP2 ISB packed BOX 0.pdb
-    structure isobutane.pdb
-    number 1000
-    inside cube 0.1 0.1 0.1 70.20
-    end structure
+    tolerance   3.0
+    filetype    pdb
+    output      STEP2_ISB_packed_BOX 0.pdb
+    structure   isobutane.pdb
+    number      1000
+    inside cube 0.1   0.1   0.1   70.20
+    end     structure
 
   Copy the above text into "pack_isobutane.inp" file, save it and run the script by typing the following line into the terminal:
 
@@ -144,21 +149,21 @@ The PSF file contains six main sections: ``remarks``, ``atoms``, ``bonds``, ``an
     PSF
           3  !NTITLE
     REMARKS  original generated structure x-plor psf file
-    REMARKS  topology ./Top Branched Alkanes.inp
+    REMARKS  topology ./Top_Branched_Alkanes.inp
     REMARKS  segment ISB { first NONE; last NONE; auto angles dihedrals }
 
 - ``NATOM``: Defines the atom names, types, and partial charges of each residue type.
 
   .. code-block:: text
 
-    atom ID
+    atom    ID
     segment name
     residue ID
     residue name
-    atom name
-    atom type
-    atom charge
-    atom mass
+    atom    name
+    atom    type
+    atom    charge
+    atom    mass
 
   The following is taken from a PSF file for isobutane:
 
@@ -181,16 +186,16 @@ The PSF file contains six main sections: ``remarks``, ``atoms``, ``bonds``, ``an
   .. code-block:: text
 
     3000   !BOND:     bonds
-       1   2          1  3  1  4  5  6
-       5   7          5  8
+    1   2   1   3   1   4   5   6
+    5   7   5   8
 
 - ``NTHETA``: The angle section lists three triples of atoms per line. The following is taken from a PSF file for isobutane:
 
   .. code-block:: text
 
     3000   !NTHETA:   angles
-       2   1          4  2  1  3  3  1  4
-       6   5          8  6  5  7  7  5  8
+    2   1   4   2   1   3   3   1   4
+    6   5   8   6   5   7   7   5   8
 
 - ``NPHI``: The dihedral sections list two quadruples of atoms per line.
 
@@ -215,19 +220,20 @@ Generating PSF file
 
 The PSF file is typically generated using PSFGen. It is convenient to make a script, such as the example below, to do this:
 
-.. code-block::text
+.. code-block:: text
 
-  psfgen << ENDMOL
-  topology ./Top branched Alaknes.inp segment ISB{
-    pdb ./STEP2 ISB packed BOX 0.pdb
-    first none
-    last none
+  package require psfgen
+  topology  ./Top_branched_Alaknes.inp 
+  segment ISB {
+    pdb   ./STEP2_ISB_packed_BOX 0.pdb
+    first   none
+    last  none
   }
 
-  coordpdb ./STEP2 ISB packed BOX 0.pdb ISB
+  coordpdb ./STEP2_ISB_packed_BOX 0.pdb ISB
 
-  writepsf ./STEP3 START ISB sys BOX 0.psf
-  writepdb ./STEP3 START ISB sys BOX 0.pdb
+  writepsf ./STEP3_START_ISB_sys_BOX_0.psf
+  writepdb ./STEP3_START_ISB_sys_BOX_0.pdb
 
 Typically, one script is run per box to generate a finalized PDB/PSF for that box. The script requires one additional file, the NAMD-style topology file. While GOMC does not directly read or interact with this file, it's typically used to generate the PSF and, hence, is considered one of the integral file types. It will be briefly discussed in the following section.
 
@@ -256,11 +262,11 @@ Here's an example of topology file for isobutane:
 
   RESI ISB    0.00 !  isobutane - TraPPE
   GROUP
-  ATOM C1 CH1 0.00 !  C3
-  ATOM C2 CH3 0.00 !  C2-C1
-  ATOM C3 CH3 0.00 !  C4
-  ATOM C4 CH3 0.00 !
-  BOND C1 C2 C1 C3 C1 C4
+  ATOM  C1  CH1   0.00 !  C3\
+  ATOM  C2  CH3   0.00 !     C1-C2
+  ATOM  C3  CH3   0.00 !  C4/
+  ATOM  C4  CH3   0.00 !
+  BOND  C1  C2  C1  C3  C1  C4
   PATCHING FIRS NONE LAST NONE
 
   END
@@ -293,7 +299,7 @@ Parameter File(s)
 Currently, GOMC uses a single parameter file and the user has the two kinds of parameter file choices:
 
 - ``CHARMM`` (Chemistry at Harvard Molecular Mechanics) compatible parameter file
-- ``EXOTIC`` parameter file
+- ``EXOTIC`` or ``Mie`` parameter file
 
 If the parameter file type is not specified or if the chosen file is missing, an error will result.
 
@@ -318,16 +324,18 @@ As seen above, the following are recognized, read and used:
 
 - ``BONDS``
   - Quadratic expression describing bond stretching based on bond length (b) in Angstrom
-  – Typically, it is ignored as bonds are rigid for Monte Carlo simulations. To specify that it is to be ignored, put a very large value i.e. "999999999999" for :math:`K_b`.
+  – Typically, it is ignored as bonds are rigid for Monte Carlo simulations.
 
-  .. Note:: GOMC does not sample bond stretch.
+  .. Note:: GOMC does not sample bond stretch. To ignore the relative bond energy, set the :math:`K_b` to a large value i.e. "999999999999". 
 
   .. figure:: _static/bonds.png
 
     Oscillations about the equilibrium bond length
 
 - ``ANGLES``
-  - Describe the conformational lbehavior of an angle (:math:`\delta`) between three atoms, one of which is shared branch point to the other two. To fix any angle and ignore the related angle energy, put a very large value i.e. "999999999999" for :math:`K_\delta`.
+  - Describe the conformational lbehavior of an angle (:math:`\delta`) between three atoms, one of which is shared branch point to the other two. 
+  
+  .. Note:: To fix any angle and ignore the related angle energy, set the :math:`K_\theta` to a large value i.e. "999999999999".
 
   .. figure:: _static/angle.png
 
@@ -350,7 +358,7 @@ As seen above, the following are recognized, read and used:
 - ``NBFIX``
   - This tag name only should be used if CHARMM force field is being used. This section allows in- teraction between two pairs of atoms to be modified, done by specifying two atom type names followed by minimum energy and minimum radius. In order to modify 1-4 interaction, a second minimum energy and minimum radius need to be defined; otherwise, the same parameter will be considered for 1-4 interaction.
 
-  .. Note:: Please pay attention that in this section we define minimum radius, not (minimum ra- dius)/2 as it is defined in the NONBONDED section.
+  .. Note:: Please pay attention that in this section we define minimum radius, not (minimum radius)/2 as it is defined in the NONBONDED section.
 
   Currently, supported sections of the ``CHARMM`` compliant file include ``BONDS``, ``ANGLES``, ``DIHEDRALS``, ``NONBONDED``, ``NBFIX``. Other sections such as ``CMAP`` are not currently read or supported.
 
@@ -367,10 +375,10 @@ BONDS
   !Kb:  kcal/mole/A**2
   !b0:  A
   !
-  !  Kb (kcal/mol) = Kb (K) * Boltz.  const.;
+  !Kb (kcal/mol) = Kb (K) * Boltz.  const.;
   !
-  !atom type Kb b0 description
-  CH3 CH1 9999999999 1.540 !  TraPPE 2 
+  !atom type      Kb          b0     description
+  CH3   CH1   9999999999    1.540 !  TraPPE 2 
 
 .. note:: The :math:`K_b` value may appear odd, but this is because a larger value corresponds to a more rigid bond. As Monte Carlo force fields (e.g. TraPPE) typically treat molecules as rigid constructs, :math:`K_b` is set to a large value - 9999999999. Sampling bond stretch is not supported in GOMC.
 
@@ -393,10 +401,10 @@ Here is an example of what is necessary for isobutane:
   !Theta0:  degrees
   !S0:  A
   !
-  !  Ktheta (kcal/mol) = Ktheta (K) * Boltz.  const.
+  !Ktheta (kcal/mol) = Ktheta (K) * Boltz.  const.
   !
-  !atom types Ktheta Theta0 Kub(?)  S0(?)
-  CH3 CH1 CH3 62.100125 112.00 !  TraPPE 2
+  !atom types         Ktheta        Theta0 
+  CH3   CH1   CH3     62.100125     112.00 !  TraPPE 2
 
 Some CHARMM ANGLES section entries include ``Urey-Bradley`` potentials (:math:`K_{ub}`, :math:`b_{ub}`), in addition to the standard quadratic angle potential. The constants related to this potential function are currently read, but the logic has not been added to calculate this potential function. Support for this potential function will be added in later versions of the code.
 
@@ -417,13 +425,13 @@ Since isobutane has no dihedral, here are the parameters pertaining to 2,3-dimet
   !n:  multiplicity
   !delta:  degrees
   !
-  !  Kchi (kcal/mol) = Kchi (K) * Boltz.  const.
+  !Kchi (kcal/mol) = Kchi (K) * Boltz.  const.
   !
-  !atom types Kchi n delta description
-  X CH1 CH1 X -0.498907 0 0.0   !  TraPPE 2
-  X CH1 CH1 X  0.851974 1 0.0   !  TraPPE 2
-  X CH1 CH1 X -0.222269 2 180.0 !  TraPPE 2
-  X CH1 CH1 X  0.876894 3 0.0   !  TraPPE 2
+  !atom types             Kchi    n     delta   description
+  X   CH1   CH1   X    -0.498907  0     0.0   !  TraPPE 2
+  X   CH1   CH1   X     0.851974  1     0.0   !  TraPPE 2
+  X   CH1   CH1   X    -0.222269  2   180.0   !  TraPPE 2
+  X   CH1   CH1   X     0.876894  3     0.0   !  TraPPE 2
 
 .. note:: The code allows the use of 'X' to indicate ambiguous positions on the ends. This is useful because this kind is often determined solely by the two middle atoms in the middle of the dihedral, according to literature.
 
@@ -443,53 +451,58 @@ The next section of the CHARMM style parameter file is the NONBONDED. In order t
   !
   !V(Lennard-Jones) = Eps,i,j[(Rmin,i,j/ri,j)**12 - 2(Rmin,i,j/ri,j)**6]
   !
-  !atom ignored epsilon Rmin/2 ignored eps,1-4 Rmin/2,1-4
-  !
-  CH3 0.0 -0.194745992 2.10461634058 0.0 0.0 0.0 !  TraPPE 1
-  CH1 0.0 -0.019872040 2.62656119304 0.0 0.0 0.0 !  TraPPE 2
+  !atom ignored epsilon         Rmin/2        ignored   eps,1-4     Rmin/2,1-4
+  CH3   0.0     -0.194745992  2.10461634058     0.0       0.0       0.0 !  TraPPE 1
+  CH1   0.0     -0.019872040  2.62656119304     0.0       0.0       0.0 !  TraPPE 2
   End
 
-.. note:: The :math:`R_{min}` is different from :math:`\sigma`. :math:`\sigma` is the distance to the x-intercept (where interaction energy goes from being repulsive to positive). :math:`R_{min}` is the potential well-depth, where the attraction is maximum. To convert :math:`\sigma` to :math:`R_{min}`, simply multiply :math:`\sigma` by 0.56123102415, and flag it with a negative sign.
+.. note:: The :math:`R_{min}` is the potential well-depth, where the attraction is maximum. However, :math:`\sigma` is the particle diameter, where the interaction energy is zero. To convert :math:`\sigma` to :math:`R_{min}`, simply multiply :math:`\sigma` by 0.56123102415.
+
+.. important:: If no parameter was defined for 1-4 interaction e.g (:math:`\epsilon_{1-4}, Rmin_{1-4}/2`), GOMC will use the  :math:`\epsilon, Rmin/2` for 1-4 interaction.
 
 NBFIX
 ^^^^^
 
-The last section of the CHARMM style parameter file is the NBFIX. In this section, individual pair interaction will be modified. First, pseudo non-bonded parameters have to be defined in NONBONDED and modified in NBFIX. Here?s an example if it is required to modify interaction between CH3 and CH1 atoms:
+The last section of the CHARMM style parameter file is the NBFIX. In this section, individual pair interaction will be modified. First, pseudo non-bonded parameters have to be defined in NONBONDED and modified in NBFIX. Here iss an example if it is required to modify interaction between CH3 and CH1 atoms:
 
 .. code-block:: text
 
   NBFIX
   !V(Lennard-Jones) = Eps,i,j[(Rmin,i,j/ri,j)**12 - 2(Rmin,i,j/ri,j)**6]
   !
-  !atom atom epsilon Rmin eps,1-4 Rmin,1-4
-  CH3 CH1 -0.294745992 1.10461634058 !
+  !atom atom  epsilon         Rmin          eps,1-4   Rmin,1-4
+  CH3   CH1   -0.294745992    1.10461634058 !
   End
 
-Exotic Parameter File
----------------------
+.. important:: If no parameter was defined for 1-4 interaction e.g (:math:`\epsilon_{1-4}, Rmin_{1-4}`), GOMC will use the  :math:`\epsilon, Rmin` for 1-4 interaction.
 
-The exotic file is intended for use with nonstandard/specialty models of molecular interaction, which are not included in CHARMM standard. Currently, two custom interaction are included:
+Exotic or Mie Parameter File
+----------------------------
+
+The Mie file is intended for use with nonstandard/specialty models of molecular interaction, which are not included in CHARMM standard. Currently, two custom interaction are included:
 
 - ``NONBODED_MIE`` This section describes n-6 (Lennard-Jones) non-bonded interactions. The Lennard- Jones potential (12-6) is a subset of this potential. Non-bonded parameters are assigned by specifying atom type name followed by minimum energy, atom diameter, and repulsion exponent. In order to modify 1-4 interaction, a second minimum energy, atom diameter, and repulsion exponent need to be defined; otherwise, the same parameters would be considered for 1-4 interaction.
-- ``NBFIX_MIE`` This section allows n-6 (Lennard-Jones) interaction between two pairs of atoms to be mod- ified. This is done by specifying two atoms type names followed by minimum energy, atom diameter, and repulsion exponent. In order to modify 1-4 interaction, a second minimum energy, atom diameter, and repulsion exponent need to be defined; otherwise, the same parameter will be considered for 1-4 interaction.
+- ``NBFIX_MIE`` This section allows n-6 (Lennard-Jones) interaction between two pairs of atoms to be modified. This is done by specifying two atoms type names followed by minimum energy, atom diameter, and repulsion exponent. In order to modify 1-4 interaction, a second minimum energy, atom diameter, and repulsion exponent need to be defined.
 
-.. note:: In ``EXOTIC`` force field, the definition of atom diameter(:math:`\sigma`) is same for both NONBONDED_MIE and NBFIX_MIE.
+.. note:: In ``Mie`` force field, the definition of atom diameter(:math:`\sigma`) is same for both ``NONBONDED_MIE`` and ``NBFIX_MIE``.
 
-Otherwise, the exotic file reuses the same geometry section headings - BONDS / ANGLES / DIHEDRALS / etc. The only difference in these sections versus in the CHARMM format force field file is that the energies are in Kelvin ('K'), the unit most commonly found for parameters in Monte Carlo chemical simulation literature. This precludes the need to convert to kcal/mol, the energy unit used in CHARMM.
-The most frequently used section of the exotic files in the Mie potential section is NONBONDED_MIE. Here are the parameters that are used to simulate alkanes:
+.. important:: If no parameter was defined for 1-4 interaction e.g (:math:`\epsilon_{1-4}, \sigma_{1-4}, n_{1-4}`), GOMC will use the  :math:`\epsilon, \sigma, n` for 1-4 interaction.
+
+Otherwise, the Mie file reuses the same geometry section headings - BONDS / ANGLES / DIHEDRALS / etc. The only difference in these sections versus in the CHARMM format force field file is that the energies are in Kelvin ('K'), the unit most commonly found for parameters in Monte Carlo chemical simulation literature. This precludes the need to convert to kcal/mol, the energy unit used in CHARMM.
+The most frequently used section of the Mie files in the Mie potential section is NONBONDED_MIE. Here are the parameters that are used to simulate alkanes:
 
 .. code-block:: text
 
   NONBONDED_MIE
   !
-  !V(mie) = 4*eps*((sig ij/r ij)^n-(sig ij/r ij)^6)
+  !V(mie) = const*eps*((sig ij/r ij)^n-(sig ij/r ij)^6)
   !
-  !atom eps sig n eps,1-4 sig,1-4 n,1-4
-  CH4 161.00 3.740 14 0.0 0.0 0.0 ! Potoff, et al. '09
-  CH3 121.25 3.783 16 0.0 0.0 0.0 ! Potoff, et al. '09
-  CH2  61.00 3.990 16 0.0 0.0 0.0 ! Potoff, et al. '09
+  !atom eps       sig     n     eps,1-4   sig,1-4   n,1-4
+  CH4   161.00    3.740   14    0.0       0.0       0.0 ! Potoff, et al. '09
+  CH3   121.25    3.783   16    0.0       0.0       0.0 ! Potoff, et al. '09
+  CH2    61.00    3.990   16    0.0       0.0       0.0 ! Potoff, et al. '09
 
-.. note:: Although the units (Angstroms) are the same, the exotic file uses :math:`\sigma`, not the :math:`R_{min}` used by CHARMM. The energy in the exotic file are expressed in Kelvin (K), as this is the standard convention in the literature.
+.. note:: Although the units (Angstroms) are the same, the Mie file uses :math:`\sigma`, not the :math:`R_{min}` used by CHARMM. The energy in the exotic file are expressed in Kelvin (K), as this is the standard convention in the literature.
 
 Control File (\*.conf)
 ----------------------

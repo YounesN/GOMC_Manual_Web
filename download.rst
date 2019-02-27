@@ -17,6 +17,19 @@ GOMC and Examples repository can be found under the main page. Under GOMC reposi
 
 .. image:: _static/clone.png
 
+To clone the GOMC using git, execute the following command in your terminal:
+
+.. code-block:: bash
+
+  $ git clone https://github.com/GOMC-WSU/GOMC.git
+
+To clone the GOMC Example files using git, execute the following command in your terminal:
+
+.. code-block:: bash
+
+  $ git clone https://github.com/GOMC-WSU/GOMC_Examples.git
+
+
 Website
 -------
 To access the GOMC website, please click on the following link:
