@@ -512,7 +512,7 @@ The control file is GOMC's proprietary input file. It contains key settings. The
 - System Settings for During Run
 - Output Settings
 
-.. note:: The control file is designed to recognize logic values, such as "yes/true/on" or "no/false/off".
+.. note:: The control file is designed to recognize logic values, such as "yes/true/on" or "no/false/off". The keyword in control file is not case sensitive.
 
 Input/Simulation Setup
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -536,22 +536,22 @@ In this section, input file names are listed. In addition, if you want to restar
        #################################
        # kind {RANDOM, INTSEED}
        #################################
-       PRNG RANDOM
+       PRNG   RANDOM
 
     - INTSEED: This option "seeds" the Mersenne Twister PRNG with a standard integer. When the same integer is used, the generated PRNG stream should be the same every time, which is helpful in tracking down bugs.
 
-``Random_Seed``
-  Defines the seed number. If "INTSEED" is chosen, seed number needs to be specified; otherwise, the program will terminate.
+  ``Random_Seed``
+    Defines the seed number. If "INTSEED" is chosen, seed number needs to be specified; otherwise, the program will terminate.
 
-  - Value 1: ULONG - If "INTSEED" option is selected for PRNG (See above example)
+    - Value 1: ULONG - If "INTSEED" option is selected for PRNG (See above example)
 
-  .. code-block:: text
+    .. code-block:: text
 
-    #################################
-    # kind {RANDOM, INTSEED}
-    #################################
-    PRNG INTSEED
-    Random Seed 50
+      #################################
+      # kind {RANDOM, INTSEED}
+      #################################
+      PRNG          INTSEED
+      RandomSeed    50
 
 ``ParaTypeCHARMM``
   Sets force field type to CHARMM style.
@@ -563,19 +563,19 @@ In this section, input file names are listed. In addition, if you want to restar
     #################################
     # FORCE FIELD TYPE
     #################################
-    ParaTypeCHARMM true
+    ParaTypeCHARMM    true
 
-``ParaTypeEXOTIC``
-  Sets force field type to EXOTIC style.
+``ParaTypeEXOTIC`` or ``ParaTypeMie``
+  Sets force field type to Mie style.
 
-  - Value 1: Boolean - True if it is EXOTIC forcefield, false otherwise.
+  - Value 1: Boolean - True if it is Mie forcefield, false otherwise.
 
   .. code-block:: text
 
     #################################
     # FORCE FIELD TYPE
     #################################
-    ParaTypeEXOTIC true
+    ParaTypeEXOTIC    true
 
 ``ParaTypeMARTINI``
   Sets force field type to MARTINI style.
@@ -587,7 +587,7 @@ In this section, input file names are listed. In addition, if you want to restar
     #################################
     # FORCE FIELD TYPE
     #################################
-    ParaTypeMARTINI true
+    ParaTypeMARTINI     true
 
 ``Parameters``
   Provides the name and location of the parameter file to use for the simulation.
@@ -599,8 +599,8 @@ In this section, input file names are listed. In addition, if you want to restar
     #################################
     # FORCE FIELD TYPE
     #################################
-    ParaTypeCHARMM yes
-    Parameters ../../common/Par_TraPPE_Alkanes.inp
+    ParaTypeCHARMM    yes
+    Parameters        ../../common/Par_TraPPE_Alkanes.inp
 
 ``Coordinates``
   Defines the PDB file names (coordinates) and location for each box in the system.
@@ -615,22 +615,22 @@ In this section, input file names are listed. In addition, if you want to restar
 
   .. code-block:: text
 
-    #################################
+    #############################################
     # INPUT PDB FILES - NVT or NPT ensemble
-    #################################
-    Coordinates 0 STEP3_START_ISB_sys.pdb
+    #############################################
+    Coordinates   0   STEP3_START_ISB_sys.pdb
 
   Example of Gibbs or GC ensemble:
 
   .. code-block:: text
 
-    #################################
-    # INPUT PDB FILES - Gibbs or GC ensemble
-    #################################
-    Coordinates 0 STEP3_START_ISB_sys_BOX_0.pdb
-    Coordinates 1 STEP3_START_ISB_sys_BOX_1.pdb
+    #############################################
+    # INPUT PDB FILES - Gibbs or GCMC ensemble
+    #############################################
+    Coordinates   0   STEP3_START_ISB_sys_BOX_0.pdb
+    Coordinates   1   STEP3_START_ISB_sys_BOX_1.pdb
 
-  .. note:: In case of Restart true, the restart PDB output file from GOMC (OutputName_BOX_0_restart.pdb) can be used for each box.
+  .. note:: In case of ``Restart`` true, the restart PDB output file from GOMC (``OutputName`` _BOX_0_restart.pdb) can be used for each box.
 
   Example of Gibbs ensemble when Restart mode is active:
 
@@ -639,8 +639,8 @@ In this section, input file names are listed. In addition, if you want to restar
     #################################
     # INPUT PDB FILES
     #################################
-    Coordinates 0 ISB_T_270_k_BOX_0_restart.pdb
-    Coordinates 1 ISB_T_270_k_BOX_1_restart.pdb
+    Coordinates   0   ISB_T_270_k_BOX_0_restart.pdb
+    Coordinates   1   ISB_T_270_k_BOX_1_restart.pdb
 
 ``Structures``
   Defines the PSF filenames (structures) for each box in the system.
@@ -658,7 +658,7 @@ In this section, input file names are listed. In addition, if you want to restar
     #################################
     # INPUT PSF FILES
     #################################
-    Structure 0 STEP3_START_ISB_sys.psf
+    Structure   0   STEP3_START_ISB_sys.psf
 
   Example of Gibbs or GC ensemble:
 
@@ -667,20 +667,20 @@ In this section, input file names are listed. In addition, if you want to restar
     #################################
     # INPUT PSF FILES
     #################################
-    Structure 0 STEP3_START_ISB_sys_BOX_0.psf
-    Structure 1 STEP3_START_ISB_sys_BOX_1.psf
+    Structure   0   STEP3_START_ISB_sys_BOX_0.psf
+    Structure   1   STEP3_START_ISB_sys_BOX_1.psf
 
-  .. note:: In case of Restart true, the PSF output file from GOMC (OutputName merged.psf) can be used for both boxes.
+  .. note:: In case of ``Restart`` true, the PSF output file from GOMC (``OutputName`` _merged.psf) can be used for both boxes.
 
-  Example of Gibbs ensemble when Restart mode is active:
+  Example of Gibbs ensemble when ``Restart`` mode is active:
 
   .. code-block:: text
 
     #################################
     # INPUT PSF FILES
     #################################
-    Structure 0 ISB_T_270_k_merged.psf
-    Structure 1 ISB_T_270_k_merged.psf
+    Structure   0   ISB_T_270_k_merged.psf
+    Structure   1   ISB_T_270_k_merged.psf
 
 System Settings for During Run Setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -692,25 +692,27 @@ Note that some tags, or entries for tags, are only used in certain ensembles (e.
 
   - Value 1: String - Allows you to pick between isovolumetric ("NVT") and isobaric ("NPT") Gibbs ensemble simulations.
 
+  .. Note:: The default value for ``GEMC`` is NVT.
+
   .. code-block:: text
 
     #################################
     # GEMC TYPE (DEFAULT IS NVT GEMC) 
     #################################
-    GEMC NVT
+    GEMC    NVT
 
 ``Pressure``
-  If "NPT" simulation is chosen, imposed pressure (in bar) needs to be specified; otherwise, the program will terminate.
+  For ``NPT`` or ``NPT-GEMC`` simulation, imposed pressure (in bar) needs to be specified; otherwise, the program will terminate.
   
-  - Value 1: Double - Constant pressure in bars.
+  - Value 1: Double - Constant pressure in bar.
 
   .. code-block:: text
 
     #################################
     # GEMC TYPE (DEFAULT IS NVT GEMC) 
     #################################
-    GEMC NPT
-    Pressure 5.76
+    GEMC        NPT
+    Pressure    5.76
 
 ``Temperature``
   Sets the temperature at which the system will run.
@@ -723,78 +725,88 @@ Note that some tags, or entries for tags, are only used in certain ensembles (e.
   - Value 1: Double - The distance to truncate the Lennard-Jones potential at.
 
 ``RcutLow``
-  Sets a specific minimum possible in angstrom that reject any move that place any atom closer than specified distance.
+  Sets a specific minimum possible in angstrom that reject any move that places any atom closer than specified distance.
 
   - Value 1: Double - The minimum possible distance between any atoms.
+
+``RcutCoulomb``
+  Sets a specific radius for each box in the system that short range electrostatic energy will be calculated.
+
+  - Value 1: Integer - Sets box number (start from '0')
+
+  - Value 2: Double - The distance to truncate the short rage electrostatic energy at.
+
+  .. note:: The default value for ``RcutCoulomb`` is the value of ``Rcut``
+
 
 ``LRC``
   Defines whether or not long range corrections are used.
   
-  - Value 1: Boolean - True to consider long range correction. In case of using "SHIFT" or "SWITCH" potential functions, LRC will be ignored.
+  - Value 1: Boolean - True to consider long range correction. 
+
+  .. note:: In case of using ``SHIFT`` or ``SWITCH`` potential functions, ``LRC`` will be ignored.
 
 ``Exclude``
   Defines which pairs of bonded atoms should be excluded from non-bonded interactions.
 
   - Value 1: String - Allows you to choose between "1-2", "1-3", and "1-4".
   
-    1-2
-      All interactions pairs of bonded atoms, except the ones that separated with one bond, will be considered and modified using 1-4 parameters defined in parameter file.
-    1-3
-      All interaction pairs of bonded atoms, except the ones that separated with one or two bonds, will be considered and modified using 1-4 parameters defined in parameter file.
-    1-4
-      All interaction pairs of bonded atoms, except the ones that separated with one, two or three bonds, will be considered using non-bonded parameters defined in parameter file.
+    - 1-2: All interactions pairs of bonded atoms, except the ones that separated with one bond, will be considered and modified using 1-4 parameters defined in parameter file.
+    
+    - 1-3: All interaction pairs of bonded atoms, except the ones that separated with one or two bonds, will be considered and modified using 1-4 parameters defined in parameter file.
+    
+    - 1-4: All interaction pairs of bonded atoms, except the ones that separated with one, two or three bonds, will be considered using non-bonded parameters defined in parameter file.
       
-    .. note:: The default value is "1-4".
+    .. note:: The default value for ``Exclude`` is "1-4".
 
-    .. note:: In CHARMM force field, the 1-4 interaction needs to be considered. Choosing "Exclude 1-3" will modify 1-4 interaction based on 1-4 parameter in parameter file. If a kind force field is used, where 1-4 interaction needs to be ignored, such as TraPPE, either "exclude 1-4" needs to be chosen or 1-4 parameter needs to be assigned a value of zero in the parameter file.
+    .. note:: In CHARMM force field, the 1-4 interaction needs to be considered. Choosing "``Exclude`` 1-3" will modify 1-4 interaction based on 1-4 parameters in parameter file. If a kind force field is used, where 1-4 interaction needs to be ignored, such as TraPPE, either "``Exclude`` 1-4" needs to be chosen or 1-4 parameter needs to be assigned to zero in the parameter file.
 
 ``Potential``
   Defines the potential function type to calculate non-bonded interaction energy and force between atoms.
 
   - Value 1: String - Allows you to pick between "VDW", "SHIFT" and "SWITCH".
     
-    VDW
-      Nonbonded interaction energy and force calculated based on n-6 (Lennard-Johns) equation. This function will be discussed further in the Intermolecular energy and Virial calculation section.
+    - VDW: Nonbonded interaction energy and force calculated based on n-6 (Lennard-Johns) equation. This function will be discussed further in the Intermolecular energy and Virial calculation section.
 
       .. code-block:: text
 
         #################################
         # SIMULATION CONDITION
         #################################
-        Temperature 270.00
-        Potential VDW
-        LRC true
-        Rcut 10
-        Exclude 1-4
+        Temperature   270.00
+        Potential     VDW
+        LRC           true
+        Rcut          10
+        Exclude       1-4
 
-    SHIFT
-      This option forces the potential energy to be zero at Rcut distance. This function will be discussed further in the Intermolecular energy and Virial calculation section.
+    - SHIFT: This option forces the potential energy to be zero at ``Rcut`` distance. This function will be discussed further in the Intermolecular energy and Virial calculation section.
 
       .. code-block:: text
 
         #################################
         # SIMULATION CONDITION
         #################################
-        Temperature 270.00
-        Potential SHIFT
-        LRC false
-        Rcut 10
-        Exclude 1-4
+        Temperature     270.00
+        Potential       SHIFT
+        LRC             false
+        Rcut            10
+        Exclude         1-4
+        RcutCoulomb  0  12.0
+        RcutCoulomb  1  20.0
 
-    SWITCH
-      This option smoothly forces the potential energy to be zero at Rcut distance and starts modifying the potential at Rswitch distance. Depending on force field type, specific potential function will be applied. These functions will be discussed further in the Intermolecular energy and Virial calculation section.
+    - SWITCH: This option smoothly forces the potential energy to be zero at ``Rcut`` distance and starts modifying the potential at ``Rswitch`` distance. Depending on force field type, specific potential function will be applied. These functions will be discussed further in the Intermolecular energy and Virial calculation section.
 
-``Rswitch``
-  In the case of choosing "SWITCH" as potential function, a distance is set in which non-bonded interaction energy is truncated smoothly from to cutoff distance.
+    ``Rswitch``
+      In the case of choosing "SWITCH" as potential function, a distance is set in which non-bonded interaction energy is truncated smoothly at ``Rcut`` distance.
 
-  - Value 1: Double - Define switch distance in angstrom. If the "SWITCH" function is chosen, Rswitch needs to be defined; otherwise, the program will be terminated.
+      - Value 1: Double - Define switch distance in angstrom. If the "SWITCH" function is chosen, ``Rswitch`` needs to be defined; otherwise, the program will be terminated.
 
 ``ElectroStatic``
   Considers coulomb interaction or not. This function will be discussed further in the Inter- molecular energy and Virial calculation section.
 
   - Value 1: Boolean - True if coulomb interaction needs to be considered and false if not.
 
-    .. note:: If MARTINI force field was used and charged molecule was used in simulation, ElectroStatic needs to be turn on. MARTINI force field uses short range coulomb interaction with constant dielectric 15.0.
+    .. note:: To simulate the polar molecule in MARTINI force field, ``ElectroStatic`` needs to be turn on. MARTINI force field uses short range coulomb interaction with constant ``Dielectric`` 15.0.
 
 ``Ewald``
   Considers standard Ewald summation method for electrostatic calculation. This function will be discussed further in the Intermolecular energy and Virial calculation section.
@@ -808,21 +820,27 @@ Note that some tags, or entries for tags, are only used in certain ensembles (e.
 
   - Value 1: Boolean - True to store reciprocal terms of Ewald summation calculation and false if not.
 
-    .. note:: By default, CachedFourier will be set to true if not value was set.
+    .. note:: By default, ``CachedFourier`` will be set to true if not value was set.
+
+    .. warning:: Monte Carlo moves, such as ``MEMC-1``, ``MEMC-2``, ``MEMC-3``, ``IntraMEMC-1``, ``IntraMEMC-2``, ``IntraMEMC-3`` does not support ``CachedFourier``.
 
 ``Tolerance``
   Specifies the accuracy of the Ewald summation calculation. Ewald separation parameter and number of reciprocal vectors for the Ewald summation are determined based on the accuracy parameter.
 
-  - Value 1: Double - Sets the accuracy in Ewald summation calculation. A reasonable value for te accuracy is 0.00001.
+  - Value 1: Double - Sets the accuracy in Ewald summation calculation. 
 
-    .. note:: If "Ewald" was chosen and no value was set for Tolerance, the program will be terminated.
+    .. note:: 
+      - A reasonable value for te accuracy is 0.00001. 
+      - If "Ewald" was chosen and no value was set for Tolerance, the program will be terminated.
     
 ``Dielectric``
   Defines dielectric constant for coulomb interaction in MARTINI force field.
 
   - Value 1: Double - Sets dielectric value used in coulomb interaction.
 
-    .. note:: In MARTINI force field, Dielectric needs to be set to 15.0. If MARTINI force field was chosen and if Dielectric was not specified, a default value of 15.0 will be assigned.
+    .. note:: 
+      - In MARTINI force field, ``Dielectric`` needs to be set to 15.0. 
+      - If MARTINI force field was chosen and ``Dielectric`` was not specified, a default value of 15.0 will be assigned.
 
 ``PressureCalc``
   Considers to calculate the pressure or not. If it is set to true, the frequency of pressure calculation need to be set.
@@ -843,10 +861,11 @@ Note that some tags, or entries for tags, are only used in certain ensembles (e.
       #################################
       # SIMULATION CONDITION
       #################################
-      ElectroStatic true
-      Ewald true
-      Tolerance 0.00001
-      1-4scaling 0.0
+      ElectroStatic   true
+      Ewald           true
+      Tolerance       0.00001
+      CachedFourier   false
+      1-4scaling      0.0
 
 ``RunSteps``
   Sets the total number of steps to run (one move is performed for each step) (cycles = this value / number of molecules in the system)
