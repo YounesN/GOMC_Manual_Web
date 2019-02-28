@@ -801,6 +801,13 @@ Note that some tags, or entries for tags, are only used in certain ensembles (e.
 
       - Value 1: Double - Define switch distance in angstrom. If the "SWITCH" function is chosen, ``Rswitch`` needs to be defined; otherwise, the program will be terminated.
 
+``VDWGeometricSigma``
+  Use geometric mean, as required by OPLS force field, to combining Lennard-Jones sigma parameters for different atom types.
+
+  - Value 1: Boolean - True, uses geometric mean to combine L-J sigmas
+
+    .. note:: The default setting of ``VDWGeometricSigma`` is false to use arithmetic mean when combining Lennard-Jones sigma parameters for different atom types.
+
 ``ElectroStatic``
   Considers coulomb interaction or not. This function will be discussed further in the Inter- molecular energy and Virial calculation section.
 
@@ -872,13 +879,17 @@ Note that some tags, or entries for tags, are only used in certain ensembles (e.
   
   - Value 1: Ulong - Total run steps
 
+  .. important:: Seting the ``RunSteps`` to zero, and activating ``Restart`` simulation, will recalculate the energy of stored simulation's snapshots.
+
 ``EqSteps``
   Sets the number of steps necessary to equilibrate the system; averaging will begin at this step.
 
   - Value 1: Ulong - Equilibration steps
 
+  .. note:: In GCMC simulation, the ``Histogram`` files will be dumped at ``EqSteps``.
+
 ``AdjSteps``
-  Sets the number of steps per adjustment to the maximum constants associated with each move (e.g. maximum distance in xyz to displace, the maximum volume in :math:`Å^3` to swap, etc.)
+  Sets the number of steps per adjustment of the parameter associated with each move (e.g. maximum translate distance, maximum rotation, maximum volume exchange, etc.)
   
   - Value 1: Ulong - Number of steps per move adjustment
 
@@ -887,45 +898,45 @@ Note that some tags, or entries for tags, are only used in certain ensembles (e.
       #################################
       # STEPS
       #################################
-      RunSteps 25000000
-      EqSteps 5000000
-      AdjSteps 1000
+      RunSteps    25000000
+      EqSteps     5000000
+      AdjSteps    1000
 
 ``ChemPot``
   For Grand Canonical (GC) ensemble runs only: Chemical potential at which simulation is run.
 
-  - Value 1: String - The resname to apply this chemical potential.
+  - Value 1: String - The residue name to apply this chemical potential.
   - Value 2: Double - The chemical potential value in degrees Kelvin (should be negative).
 
-  .. note:: For binary systems, include multiple copies of the tag (one per residue kind).
-
-  .. note:: If there is a molecule kind that cannot be transfer between boxes (in PDB file the beta value is set to 1.00 or 2.00), an arbitrary value (e.g. 0.00) can be assigned to the resname.
+  .. note:: 
+    - For binary systems, include multiple copies of the tag (one per residue kind).
+    - If there is a molecule kind that cannot be transfer between boxes (in PDB file the beta value is set to 1.00 or 2.00), an arbitrary value (e.g. 0.00) can be assigned to the residue name.
 
   .. code-block:: text
 
     #################################
     # Mol.  Name Chem.  Pot.  (K)
     #################################
-    ChemPot AR -968
+    ChemPot   ISB     -968
 
 ``Fugacity``
   For Grand Canonical (GC) ensemble runs only: Fugacity at which simulation is run.
   
-  - Value 1: String - The resname to apply this fugacity.
+  - Value 1: String - The residue to apply this fugacity.
   - Value 2: Double - The fugacity value in bar.
 
-  .. note:: For binary systems, include multiple copies of the tag (one per residue kind).
-  
-  .. note:: If there is a molecule kind that cannot be transfer between boxes (in PDB file the beta value is set to 1.00 or 2.00) an arbitrary value e.g. 0.00 can be assigned to the resname.
+  .. note:: 
+    - For binary systems, include multiple copies of the tag (one per residue kind).
+    - If there is a molecule kind that cannot be transfer between boxes (in PDB file the beta value is set to 1.00 or 2.00) an arbitrary value e.g. 0.00 can be assigned to the residue name.
 
   .. code-block:: text
 
     #################################
     # Mol.  Name Fugacity (bar)
     #################################
-    Fugacity AR 0.1
-    Fugacity Si 0.0
-    Fugacity O 0.0
+    Fugacity  ISB   10.0
+    Fugacity  Si     0.0
+    Fugacity  O      0.0
 
 ``DisFreq``
   Fractional percentage at which displacement move will occur.
@@ -938,45 +949,179 @@ Note that some tags, or entries for tags, are only used in certain ensembles (e.
   - Value 1: Double - % Rotatation
 
 ``IntraSwapFreq``
-  Fractional percentage at which molecule will be removed from a box and inserted into the same box using configurational bias algorithm.
+  Fractional percentage at which molecule will be removed from a box and inserted into the same box using coupled-decoupled configurational-bias algorithm.
 
   - Value 1: Double - % Intra molecule swap
 
+  .. note:: The default value for ``IntraSwapFreq`` is 0.000
+
 ``RegrowthFreq``
-  Fractional percentage at which part of the molecule will be deleted and then regrown using configurational bias algorithm.
+  Fractional percentage at which part of the molecule will be deleted and then regrown using coupled-decoupled configurational-bias algorithm.
 
   - Value 1: Double - % Molecular growth
+
+  .. note:: The default value for ``RegrowthFreq`` is 0.000
+
+``CrankShaftFreq``
+  Fractional percentage at which crankshaft move will occur. In this move, two atoms that are forming angle or dihedral are selected randomely and form a shaft. Then any atoms or group that are within these two selected atoms, will rotate around the shaft to sample intramolecular degree of freedom.
+
+  - Value 1: Double - % Crankshaft
+
+  .. note:: The default value for ``CrankShaftFreq`` is 0.000
+
+``IntraMEMC-1Freq``
+  Fractional percentage at which specified number of small molecule kind will be exchanged with a specified large molecule kind in defined sub-volume within same simulation box.
+  
+  - Value 1: Double - % Molecular exchange
+
+  .. note:: 
+    - The default value for ``IntraMEMC-1Freq`` is 0.000
+    - This move need additional information such as ``ExchangeVolumeDim``, ``ExchangeRatio``, ``ExchangeSmallKind``, and ``ExchangeLargeKind``, which will be explained later.
+    - For more information about this move, please refere to `MEMC-GCMC <https://aip.scitation.org/doi/abs/10.1063/1.5025184>`__ and `MEMC-GEMC <https://www.sciencedirect.com/science/article/pii/S0378381218305351>`__ papers.
+
+  ``IntraMEMC-2Freq``
+    Fractional percentage at which specified number of small molecule kind will be exchanged with a specified large molecule kind in defined sub-volume within same simulation box. Backbone of small and large molecule kind will be used to insert the large molecule more efficiently.
+  
+  - Value 1: Double - % Molecular exchange
+
+  .. note:: 
+    - The default value for ``IntraMEMC-2Freq`` is 0.000
+    - This move need additional information such as ``ExchangeVolumeDim``, ``ExchangeRatio``, ``ExchangeSmallKind``, ``ExchangeLargeKind``, ``SmallKindBackBone``, and ``LargeKindBackBone``, which will be explained later.
+    - For more information about this move, please refere to `MEMC-GCMC <https://aip.scitation.org/doi/abs/10.1063/1.5025184>`__ and `MEMC-GEMC <https://www.sciencedirect.com/science/article/pii/S0378381218305351>`__ papers.
+
+  ``IntraMEMC-3Freq``
+    Fractional percentage at which specified number of small molecule kind will be exchanged with a specified large molecule kind in defined sub-volume within same simulation box. Specified atom of the large molecule kind will be used to insert the large molecule using coupled-decoupled configurational-bias.
+  
+  - Value 1: Double - % Molecular exchange
+
+  .. note:: 
+    - The default value for ``IntraMEMC-3Freq`` is 0.000
+    - This move need additional information such as ``ExchangeVolumeDim``, ``ExchangeRatio``, ``ExchangeSmallKind``, ``ExchangeLargeKind``, and ``LargeKindBackBone``, which will be explained later.
+    - For more information about this move, please refere to `MEMC-GCMC <https://aip.scitation.org/doi/abs/10.1063/1.5025184>`__ and `MEMC-GEMC <https://www.sciencedirect.com/science/article/pii/S0378381218305351>`__ papers.
+
+
+``MEMC-1Freq``
+  For Gibbs and Grand Canonical (GC) ensemble runs only: Fractional percentage at which specified number of small molecule kind will be exchanged with a specified large molecule kind in defined sub-volume in dense simulation box.
+  
+  - Value 1: Double - % Molecular exchange
+
+  .. note:: 
+    - The default value for ``IntraMEMC-1Freq`` is 0.000
+    - This move need additional information such as ``ExchangeVolumeDim``, ``ExchangeRatio``, ``ExchangeSmallKind``, and ``ExchangeLargeKind``, which will be explained later.
+    - For more information about this move, please refere to `MEMC-GCMC <https://aip.scitation.org/doi/abs/10.1063/1.5025184>`__ and `MEMC-GEMC <https://www.sciencedirect.com/science/article/pii/S0378381218305351>`__ papers.
+
+  ``MEMC-2Freq``
+    For Gibbs and Grand Canonical (GC) ensemble runs only: Fractional percentage at which specified number of small molecule kind will be exchanged with a specified large molecule kind in defined sub-volume in dense simulation box. Backbone of small and large molecule kind will be used to insert the large molecule more efficiently.
+  
+  - Value 1: Double - % Molecular exchange
+
+  .. note:: 
+    - The default value for ``IntraMEMC-2Freq`` is 0.000
+    - This move need additional information such as ``ExchangeVolumeDim``, ``ExchangeRatio``, ``ExchangeSmallKind``, ``ExchangeLargeKind``, ``SmallKindBackBone``, and ``LargeKindBackBone``, which will be explained later.
+    - For more information about this move, please refere to `MEMC-GCMC <https://aip.scitation.org/doi/abs/10.1063/1.5025184>`__ and `MEMC-GEMC <https://www.sciencedirect.com/science/article/pii/S0378381218305351>`__ papers.
+
+  ``MEMC-3Freq``
+    For Gibbs and Grand Canonical (GC) ensemble runs only: Fractional percentage at which specified number of small molecule kind will be exchanged with a specified large molecule kind in defined sub-volume in dense simulation box. Specified atom of the large molecule kind will be used to insert the large molecule using coupled-decoupled configurational-bias.
+  
+  - Value 1: Double - % Molecular exchange
+
+  .. note:: 
+    - The default value for ``IntraMEMC-3Freq`` is 0.000
+    - This move need additional information such as ``ExchangeVolumeDim``, ``ExchangeRatio``, ``ExchangeSmallKind``, ``ExchangeLargeKind``, and ``LargeKindBackBone``, which will be explained later.
+    - For more information about this move, please refere to `MEMC-GCMC <https://aip.scitation.org/doi/abs/10.1063/1.5025184>`__ and `MEMC-GEMC <https://www.sciencedirect.com/science/article/pii/S0378381218305351>`__ papers.
+
+``SwapFreq``
+  For Gibbs and Grand Canonical (GC) ensemble runs only: Fractional percentage at which molecule swap move will occur using coupled-decoupled configurational-bias.
+
+  - Value 1: Double - % Molecule swaps
 
 ``VolFreq``
   For isobaric-isothermal ensemble and Gibbs ensemble runs only: Fractional percentage at which molecule will be removed from one box and inserted into the other box using configurational bias algorithm.
 
   - Value 1: Double - % Volume swaps
 
-``SwapFreq``
-  For Gibbs and Grand Canonical (GC) ensemble runs only: Fractional percentage at which molecule swap move will occur.
+.. code-block:: text
 
-  - Value 1: Double - % Molecule swaps
+  #################################
+  # MOVE FREQEUNCY
+  #################################
+  DisFreq         0.39
+  RotFreq         0.10
+  IntraSwapFreq   0.10
+  RegrowthFreq    0.10
+  CrankShaftFreq  0.10
+  SwapFreq        0.20
+  VolFreq         0.01
 
-  .. code-block:: text
 
-    #################################
-    # MOVE FREQEUNCY
-    #################################
-    DisFreq 0.49
-    RotFreq 0.10
-    VolFreq 0.01
-    SwapFreq 0.20
-    IntraSwapFreq 0.10
-    RegrowthFreq 0.10
+.. warning:: All move percentages should add up to 1.0; otherwise, the program will terminate.
 
-  .. note:: All move percentages should add up to 1.0; otherwise, the program will terminate.
+
+``ExchangeVolumeDim``
+  To use all variation of ``MEMC`` and ``IntraMEMC`` Monte Carlo moves, the exchange sub-volume must be defined. The exchange sub-volume is defined as an orthogonal box with x-, y-, and z-dimensions, where small molecule/molecules kind will be selected from to be exchanged with a large molecule kind.
+
+  - Value 1: Double - X dimension in :math:`Å`
+  - Value 2: Double - Y dimension in :math:`Å`
+  - Value 3: Double - Z dimension in :math:`Å`
+
+  .. note::
+    - Currently, the X and Y dimension cannot be set independently (X = Y = max(X, Y))
+    - A heuristic for setting good values of the x-, y-, and z-dimensions is to use the geometric size of the large molecule plus 1-2 Å in each dimension.
+    - In case of exchanging 1 small molecule kind with 1 large molecule kind in ``IntraMEMC-2``, ``IntraMEMC-3``, ``MEMC-2``, ``MEMC-3`` Monte Carlo moves, the sub-volume dimension has no effect on acceptance rate.
+
+``ExchangeSmallKind``
+  To use all variation of ``MEMC`` and ``IntraMEMC`` Monte Carlo moves, the small molecule kind to be exchanged with a large molecule kind must be defined. Multiple small molecule kind can be specified.
+
+  - Value 1: String - Small molecule kind to be exchanged.
+
+``ExchangeLargeKind``
+  To use all variation of ``MEMC`` and ``IntraMEMC`` Monte Carlo moves, the large molecule kind to be exchanged with small molecule kind must be defined. Multiple large molecule kind can be specified.
+
+  - Value 1: String - Large molecule kind to be exchanged.
+
+``ExchangeRatio``
+  To use all variation of ``MEMC`` and ``IntraMEMC`` Monte Carlo moves, the exchange ratio must be defined. The exchange ratio defines how many small molecule will be exchanged with 1 large molecule. For each large-small molecule pairs, one exchange ratio must be defined.
+
+  - Value 1: Integer - Ratio of exchanging small molecule/molecules with 1 large molecule.
+
+``LargeKindBackBone``
+  To use ``MEMC-2``, ``MEMC-3``, ``IntraMEMC-2``, and ``IntraMEMC-3`` Monte Carlo moves, the large molecule backbone must be defined. The backbone of the molecule is defined as a vector that connects two atoms belong to the large molecule. The large molecule backbone will be used to align the sub-volume in ``MEMC-2`` and ``IntraMEMC-2`` moves, while in ``MEMC-3`` and ``IntraMEMC-3`` moves, it uses the atom name to start growing the large molecule using coupled-decoupled configurational-bias. For each large-small molecule pairs, two atom names must be defined.
+
+  - Value 1: String - Atom name 1 belong to the large molecule's backbone
+
+  - Value 2: String - Atom name 2 belong to the large molecule's backbone
+
+  .. important:: In ``MEMC-3`` and ``IntraMEMC-3`` Monte Carlo moves, both atom names must be same, otherwise program will be terminated.
+
+``SmallKindBackBone``
+  To use ``MEMC-2``, and ``IntraMEMC-2`` Monte Carlo moves, the small molecule backbone must be defined. The backbone of the molecule is defined as a vector that connects two atoms belong to the small molecule and will be used to align the sub-volume. For each large-small molecule pairs, two atom names must be defined.
+
+  - Value 1: String - Atom name 1 belong to the small molecule's backbone
+
+  - Value 2: String - Atom name 2 belong to the small molecule's backbone
+
+
+Here is the example of ``MEMC-2`` Monte Carlo moves, where 7 large-small molecule pairs are defined with an exchange ratio of 1:1: (ethane, methane), (propane, ethane), (n-butane, propane), (n-pentane, nbutane), (n-hexane, n-pentane), (n-heptane, n-hexane), and (noctane, n-heptane).
+
+.. code-block:: text
+
+  ######################################################################
+  # MEMC PARAMETER
+  ######################################################################
+  ExchangeVolumeDim   1.0   1.0   1.0
+  ExchangeRatio       1	      1	      1      1      1      1      1
+  ExchangeLargeKind   C8P    C7P    C6P    C5P    C4P    C3P    C2P
+  ExchangeSmallKind   C7P    C6P    C5P    C4P    C3P    C2P    C1P
+  LargeKindBackBone   C1 C8  C1 C7  C1 C6  C1 C5  C1 C4  C1 C3  C1 C2
+  SmallKindBackBone   C1 C7  C1 C6  C1 C5  C1 C4  C1 C3  C1 C2  C1 C1
+
 
 ``useConstantArea``
   For Isobaric-Isothermal ensemble and Gibbs ensemble runs only: Considers to change the volume of the simulation box by fixing the cross-sectional area (x-y plane).
 
   - Value 1: Boolean - If true volume will change only in z axis, If false volume will change with constant axis ratio.
 
-  .. note:: By default, useConstantArea will be set to false if no value was set. It means, the volume of the box will change in a way to maintain the constant axis ratio.
+  .. note:: By default, ``useConstantArea`` will be set to false if no value was set. It means, the volume of the box will change in a way to maintain the constant axis ratio.
 
 ``FixVolBox0``
   For adsorption simulation in NPT Gibbs ensemble runs only: Changing the volume of fluid phase (Box 1) to maintain the constant imposed pressure and temperature, while keeping the volume of adsorbed phase (Box 0) fix.
@@ -987,9 +1132,9 @@ Note that some tags, or entries for tags, are only used in certain ensembles (e.
   Defines the shape and size of the simulation periodic cell. ``CellBasisVector1``, ``CellBasisVector2``, ``CellBasisVector3`` represent the cell basis vector :math:`a,b,c`, respectively. This tag may occur multiple times. It occurs once for NVT and NPT, but twice for Gibbs ensemble or GC ensemble.
 
   - Value 1: Integer - Sets box number (first box is box '0'). 
-  - Value 2: Double - x value of cell basis vector in Angstroms.
-  - Value 3: Double - y value of cell basis vector in Angstroms.
-  - Value 4: Double - z value of cell basis vector in Angstroms.
+  - Value 2: Double - x value of cell basis vector :math:`Å`.
+  - Value 3: Double - y value of cell basis vector :math:`Å`.
+  - Value 4: Double - z value of cell basis vector :math:`Å`.
 
   .. note:: If the number of defined boxes were not compatible to simulation type, the program will be terminated.
 
@@ -997,47 +1142,47 @@ Note that some tags, or entries for tags, are only used in certain ensembles (e.
 
   .. code-block:: text
 
-    #################################
+    ############################################
     # BOX DIMENSION #, X, Y, Z
-    #################################
-    CellBasisVector1 0 40.00 00.00 00.00
-    CellBasisVector2 0 00.00 40.00 00.00
-    CellBasisVector3 0 00.00 00.00 80.00
+    ############################################
+    CellBasisVector1  0   40.00   00.00   00.00
+    CellBasisVector2  0   00.00   40.00   00.00
+    CellBasisVector3  0   00.00   00.00   80.00
 
-  Example for Gibbs ensemble and GC ensemble ensemble. In this example, In the first box, only vector a and c are perpendicular to each other (:math:`\alpha = 90, \beta = 90, \gamma = 120`), and making a non-orthogonal simulation cell with the cell length :math:`a, b, c` of 36.91, 39.91, and 76.98 Angstroms, respectively. In the second box, each vector is perpendicular to the other two (:math:`\alpha = 90, \beta = 90, \gamma = 90`), as indicated by a single x, y, or z value being specified by each and making a cubic box:
+  Example for Gibbs ensemble and GC ensemble ensemble. In this example, In the first box, only vector :math:`a` and :math:`c` are perpendicular to each other (:math:`\alpha = 90, \beta = 90, \gamma = 120`), and making a non-orthogonal simulation cell with the cell length :math:`a = 39.91 Å, b = 39.91 Å, c = 76.98 Å`. In the second box, each vector is perpendicular to the other two (:math:`\alpha = 90, \beta = 90, \gamma = 90`), as indicated by a single x, y, or z value being specified by each and making a cubic box:
 
   .. code-block:: text
   
-    #################################
+    ############################################
     # BOX DIMENSION #, X, Y, Z
-    #################################
-    CellBasisVector1 0 36.91 00.00 00.00
-    CellBasisVector2 0 -18.45 31.96 00.00
-    CellBasisVector3 0 00.00 00.00 76.98
+    ############################################
+    CellBasisVector1  0   36.91   00.00   00.00
+    CellBasisVector2  0   -18.45  31.96   00.00
+    CellBasisVector3  0   00.00   00.00   76.98
     
-    CellBasisVector1 1 60.00 00.00 00.00
-    CellBasisVector2 1 00.00 60.00 00.00
-    CellBasisVector3 1 00.00 00.00 60.00
+    CellBasisVector1  1   60.00   00.00   00.00
+    CellBasisVector2  1   00.00   60.00   00.00
+    CellBasisVector3  1   00.00   00.00   60.00
 
-  .. warning:: In case of ``Restart true``, box dimension does not need to be specified. If it is specified, program will read it but it will be ignored and replaced by the printed cell dimensions and angles in the restart PDB output file from GOMC (``OutputName_BOX_0_restart.pdb`` and ``Output_Name_BOX_1_restart.pdb``).
+  .. warning:: If ``Restart`` was activated, box dimension does not need to be specified. If it is specified, program will read it but it will be ignored and replaced by the printed cell dimensions and angles in the restart PDB output file from GOMC (``OutputName_BOX_0_restart.pdb`` and ``Output_Name_BOX_1_restart.pdb``).
 
 ``CBMC_First``
-  Number of CBMC trials to choose the first atom position (Lennard-Jones trials for first seed growth).
+  Number of CD-CBMC trials to choose the first atom position (Lennard-Jones trials for first seed growth).
 
   - Value 1: Integer - Number of initial insertion sites to try.
 
 ``CBMC_Nth``
-  Number of CBMC trials to choose the later atom positions (Lennard-Jones trials for first seed growth).
+  Number of CD-CBMC trials to choose the later atom positions (Lennard-Jones trials for first seed growth).
 
   - Value 1: Integer - Number of LJ trials for growing later atom positions.
 
 ``CBMC_Ang``
-  Number of CBMC bending angle trials to perform for geometry (per the coupled-decoupled CBMC scheme).
+  Number of CD-CBMC bending angle trials to perform for geometry (per the coupled-decoupled CBMC scheme).
 
   - Value 1: Integer - Number of trials per angle.
 
 ``CBMC_Dih``
-  Number of CBMC dihedral angle trials to perform for geometry (per the coupled-decoupled CBMC scheme).
+  Number of CD-CBMC dihedral angle trials to perform for geometry (per the coupled-decoupled CBMC scheme).
 
   - Value 1: Integer - Number of trials per dihedral.
 
@@ -1046,10 +1191,11 @@ Note that some tags, or entries for tags, are only used in certain ensembles (e.
     #################################
     # CBMC TRIALS
     #################################
-    CBMC_First 10
-    CBMC_Nth 4
-    CBMC_Ang 100
-    CBMC_Dih 30
+    CBMC_First  10
+    CBMC_Nth    4
+    CBMC_Ang    100
+    CBMC_Dih    30
+
 
 Output Controls
 ^^^^^^^^^^^^^^^
@@ -1057,16 +1203,16 @@ Output Controls
 This section contains all the values that control output in the control file. For example, certain variables control the naming of files dumped of the block-averaged thermodynamic variables of interest, the PDB files, etc.
 
 ``OutputName``
-  Unique name for simulation used to name the block average, PDB, and PSF output files.
+  Unique name with no space for simulation used to name the block average, PDB, and PSF output files.
   
-  - Value 1: String - Unique phhrase to identify this system.
+  - Value 1: String - Unique phrase to identify this system.
 
   .. code-block:: text
 
     #################################
     # OUTPUT FILE NAME
     #################################
-    OutputName ISB T 270 K
+    OutputName  ISB_T_270_K
 
 ``CoordinatesFreq``
   Controls output of PDB file (coordinates). If PDB dumping was enabled, one file for NVT or NPT and two files for Gibbs ensemble or GC ensemble will be dumped into ``OutputName_BOX_n.pdb``, where n defines the box number.
@@ -1075,9 +1221,10 @@ This section contains all the values that control output in the control file. Fo
 
   - Value 2: Ulong - Steps per dump PDB frame. It should be less than or equal to RunSteps. If this keyword could not be found in configuration file, its value will be assigned a default value to dump 10 frames.
 
-  .. note:: The PDB file contains an entry for every ATOM, in all boxes read. This allows VMD (which requires a constant number of atoms) to properly parse frames, with a bit of help. Atoms that are not currently in a specific box are given the coordinate (0.00, 0.00, 0.00). The occupancy value corresponds to the box a molecule is currently in (e.g. 0.00 for box 0; 1.00 for box 1).
-
-  .. note:: At the beginning of simulation, a merged PSF file will be dumped into OutputName merged.pdb, in which all boxes will be dumped. It also contains the topology for every molecule in both boxes, corresponding to the merged PDB format. Loading PDB files into merged PSF file in VMD allows the user to visualize and analyze the results. In addition, this file can be used to load into GOMC once restart simulation was active.
+  .. note:: 
+    - The PDB file contains an entry for every ATOM, in all boxes read. This allows VMD (which requires a constant number of atoms) to properly parse frames, with a bit of help. Atoms that are not currently in a specific box are given the coordinate (0.00, 0.00, 0.00). The occupancy value corresponds to the box a molecule is currently in (e.g. 0.00 for box 0; 1.00 for box 1).
+    - At the beginning of simulation, a merged PSF file will be dumped into ``OutputName`` _merged.pdb, in which all boxes will be dumped. It also contains the topology for every molecule in both boxes, corresponding to the merged PDB format. Loading PDB files into merged PSF file in VMD allows the user to visualize and analyze the results. 
+    - In addition, this file can be used to load into GOMC once ``Restart`` simulation was active and ``RunSteps`` sets to 0 to recalculate the energy of stored snapshot of the previous simulation.
 
 ``RestartFreq``
   Controls the output of the last state of simulation at a specified step in PDB files (coordinates) OutputName BOX n restart.pdb, where n defines the box number. Header part of this file contains important information and will be needed to restart the simulation:
@@ -1090,8 +1237,9 @@ This section contains all the values that control output in the control file. Fo
   - Value 1: Boolean - "true" enables dumping these files; "false" disables dumping.
   - Value 2: Ulong - Steps per dump last state of simulation to PDB files. It should be less than or equal to RunSteps. If this keyword could not be found in the configuration file, RestartFreq value will be assigned by default.
 
-  .. note:: The restart PDB file contains only ATOM that exist in each boxes at specified steps. This allows the user to load this file into GOMC once restart simulation was active.
-  .. note:: CoordinatesFreq must be a common multiple of RestartFreq or vice versa.
+  .. note:: 
+    - The restart PDB file contains only ATOM that exist in each boxes at specified steps. This allows the user to load this file into GOMC once ``Restart`` simulation was active.
+    - CoordinatesFreq must be a common multiple of RestartFreq or vice versa.
 
 ``ConsoleFreq``
   Controls the output to STDIO ("the console") of messages such as acceptance statistics, and run timing info. In addition, instantaneously-selected thermodynamic properties will be output to this file.

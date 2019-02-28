@@ -21,6 +21,7 @@ Pressure, Pressure Tensor    bar
 Heat of vaporization         :math:`KJ/mol`
 Volume                       :math:`Å^3`
 Density                      :math:`kg/m^3`
+Mol Density                  :math:`molecule/Å^3`
 Surface Tension              :math:`mN/m`
 ===========================  =================
 
@@ -31,7 +32,7 @@ A variety of useful information relating to instantaneous statistical and thermo
 
 .. code-block:: bash
 
-  $ GOMC CPU NVT in.conf > out isobutane.log &
+  $ GOMC CPU NVT in.conf > out_isobutane.log &
 
 Statistical and thermodynamic information is provided in console output.
 
@@ -53,14 +54,24 @@ Statistical and thermodynamic information is provided in console output.
 
   – Electrostatic correction
 
-  – Total electrostatic energy (sum of real, reciprocal, self, and correction) – Total Energy (sum of the all energies)
+  – Total electrostatic energy (sum of real, reciprocal, self, and correction) 
+  
+  – Total Energy (sum of the all energies)
 
 - Pressure, Pressure Tensor (:math:`P_{xx},P_{yy},P_{zz}`) 
+
 - Volume
+
 - Total molecule number
+
 - Total Density
+
 - Surface Tension
+
 - Mole fraction of each species
+
+- Mole density of each species
+
 
 Detailed move, energy, and statistical or thermodynamic information for each simulation box will be printed in three different sections. Each section's title will start with ``MTITLE``, ``ETITLE``, and ``STITLE`` for move, energy, and statistical information, respectively. The instantaneous values for each section will start with ``MOVE_#``, ``ENER_#``, and ``STAT_#`` for move, energy, and statistical values, respectively. Where, # is the simulation box number. In addition, if pressure calculation is activated and enabled to print, pressure tensor will be printed in the console output file. This section starts with ``PRES_#`` and print the diagonal value of pressure tensor :math:`P_{xx}`, :math:`P_{yy}`,and :math:`P_{zz}`, respectively. The second element after the title of each section is the step number.
 
@@ -68,7 +79,7 @@ In order to extract the desired information from the console file, "grep" and "a
 
 .. code-block:: bash
 
-  $ grep "ENER_0" output console.log | awk '{print $3}'
+  $ grep "ENER_0" output_console.log | awk '{print $3}'
 
 Here, "output_console.log" is the console output file and "$3" represents the second element of the "ENERGY_BOX_0" section.
 
@@ -97,15 +108,15 @@ After the simulation starts, move, energy, and statistical title, followed by th
 
 .. image:: _static/out5.png
 
-At the end of the run, timing information and other wrap up info will be printed.
+At the end of the run, Monte Carlo move acceptance for each molecule kind and simulation box, total amount of time spent on each Monte Carlo move, total timing information, and other wrap up info will be printed.
 
-.. note:: Printed energy and statistical values are instantaneous values.
+.. note:: 
+  - Printed energy and statistical values are instantaneous values.
 
-.. note:: In order to keep the format of console file consistent, if absolute value of calculated properties of simulation is greater that :math:`1.0e^{11}`, the value of 999999999 will be printed instead.
+  - In order to keep the format of console file consistent and print the calculated properties with high accuracy, scientific format is used.  
 
-.. note:: Since mol fraction value is very small compare to other properties, 8 digit precision was used instead of 4 digit to print out the value.
+  - It's important to watch the acceptance rates and adjust the move percentages and CBMC trial amounts to get the desired rate of move acceptance.
 
-.. note:: It's important to watch the acceptance rates and adjust the move percentages and CBMC trial amounts to get the desired rate of move acceptance.
 
 Block Output Files
 ------------------
@@ -129,12 +140,21 @@ GOMC tracks a number of thermodynamic variables of interest during the simulatio
   – Total Energy (sum of the all energies)
 
 - Virial
+
 - Pressure
+
 - Surface Tension (using virial method)
+
 - Volume
+
 - Total molecule number
+
 - Total Density
+
 - Mole fraction of each species
+
+- Mole density of each species
+
 - Heat of vaporization
 
 At the beginning of each file, the title of each property followed by their average values is printed. Desired data can be extracted, as explained before, using the "awk" command. For example, in order to extract total density of the system, the following command need to be executed in terminal:
@@ -145,13 +165,13 @@ At the beginning of each file, the title of each property followed by their aver
 
 Here, "Blk_OutputName_BOX_0.dat" is the block-average file for simulation box 0 and "$13" represents the 13th column of the block file.
 
-.. note:: In order to keep the format of console file consistent, if absolute value of calculated properties of simulation is greater that :math:`1.0e^{11}`, the value of 999999999 will be printed instead.
-.. note:: Since mol fraction value is very small compare to other properties, 8 digit precision was used instead of 4 digit to print out the value.
+.. note:: In order to keep the format of BlockOutput file consistent and print the calculated properties with high accuracy, scientific format is used.  
+
 
 Visualizing Simulation
 ----------------------
 
-If ``CoordinatesFreq`` is enabled in configuration file, GOMC will output the molecule coordinates every specified stpes. The PDB and PSF output (merging of atom entries) has already been mentioned/explained in previous sections. To recap: The PDB file's ATOM entries' occupancy is used to represent the box the molecule is in for the current frame. All molecules are listed in order in which they were read (i.e. if box 0 has :math:`1..N1` molecules and box 1 has :math:`1..N2` molecules, then all of the molecules in box 0 are listed first and all the molecules in box 1, i.e. :math:`1..N1`, :math:`N1 + 1..N1 + N2`). PDB frames are written as standard PDBs to consecutive file frames.
+If ``CoordinatesFreq`` is enabled in configuration file, GOMC will output the molecule coordinates every specified stpes. The PDB and PSF output (merging of atom entries) has already been mentioned/explained in previous sections. To recap: The PDB file's ATOM entries' occupancy is used to represent the box the molecule is in for the current frame. All molecules are listed in order in which they were read (i.e. if box 0 has :math:`1, 2, ..., N1` molecules and box 1 has :math:`1, 2, ..., N2` molecules, then all of the molecules in box 0 are listed first and all the molecules in box 1, i.e. :math:`1, 2 ,... ,N1`, :math:`N1 + 1, ..., N1 + N2`). PDB frames are written as standard PDBs to consecutive file frames.
 
 To visualize, open the output PDB and PSF files by GOMC using VMD, type this command in the terminal:
 
@@ -159,24 +179,24 @@ For all simulation except Gibbs ensemble that has one simulation box:
 
 .. code-block:: bash
 
-  $ vmd ISB_T_270_k_merged.psf ISB_T_270_k_BOX_0.pdb
+  $ vmd   ISB_T_270_k_merged.psf  ISB_T_270_k_BOX_0.pdb
 
 For Gibbs ensemble, visualizing the first box:
 
 .. code-block:: bash
 
-  $ vmd ISB_T_270_k_merged.psf ISB_T_270_k_BOX_0.pdb
+  $ vmd   ISB_T_270_k_merged.psf  ISB_T_270_k_BOX_0.pdb
 
 For Gibbs ensemble, visualizing the second box:
 
 .. code-block:: bash
 
-  $ vmd ISB_T_270_k_merged.psf ISB_T_270_k_BOX_1.pdb
+  $ vmd   ISB_T_270_k_merged.psf  ISB_T_270_k_BOX_1.pdb
 
 .. note:: Restart coordinate file (OutputName_BOX_0_restart.pdb) cannot be visualize using merged psf file, because atom number does not match. However, you can still open it in vmd using following command and vmd will automatically find the bonds of the molecule based on the coordinates.
 
 .. code-block:: bash
 
-  $ vmd ISB_T_270_k_BOX_0_restart.pdb
+  $ vmd   ISB_T_270_k_BOX_0_restart.pdb
 
   

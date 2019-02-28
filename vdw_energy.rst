@@ -26,7 +26,7 @@ This option calculates potential energy without any truncation.
 
   .. math:: 
 
-    W_{ij} = -\frac{dE_{ij}}{dr}\times \frac{\rightharpoonup{r_{ij}}}{r_{ij}}
+    W_{ij} = -\frac{dE_{ij}}{dr}\times \frac{\overrightarrow{r_{ij}}}{{r_{ij}}}
 
   Using n−6 LJ potential defined above:
 
@@ -93,7 +93,9 @@ This option in ``CHARMM`` or ``EXOTIC`` force field smoothly forces the potentia
 
   .. math::
 
-    W_{ij}(\texttt{switch}) = \Bigg[6 C_{n_{ij}} \epsilon_{ij} \bigg[\frac{n_{ij}}{6} \times \bigg(\frac{\sigma_{ij}}{r_{ij}}\bigg)^{n_{ij}} - \bigg(\frac{\sigma_{ij}}{r_{ij}}\bigg)^6\bigg]\times \frac{F_E}{{r_{ij}}^2}  - C_{n_{ij}} \epsilon_{ij} \bigg[\bigg(\frac{\sigma_{ij}}{r_{ij}}\bigg)^{n_{ij}} - \bigg(\frac{\sigma_{ij}}{r_{ij}}\bigg)^6\bigg] \times F_W \Bigg] \times \overrightarrow{r_{ij}}
+    W_{ij}(\texttt{switch}) = \Bigg[6 C_{n_{ij}} \epsilon_{ij} \bigg[\frac{n_{ij}}{6} \times \bigg(\frac{\sigma_{ij}}{r_{ij}}\bigg)^{n_{ij}} - \bigg(\frac{\sigma_{ij}}{r_{ij}}\bigg)^6\bigg]\times \frac{F_E}{{r_{ij}}^2}  - 
+    
+    C_{n_{ij}} \epsilon_{ij} \bigg[\bigg(\frac{\sigma_{ij}}{r_{ij}}\bigg)^{n_{ij}} - \bigg(\frac{\sigma_{ij}}{r_{ij}}\bigg)^6\bigg] \times F_W \Bigg] \times \overrightarrow{r_{ij}}
 
   The factor :math:`F_W` is defined as:
 

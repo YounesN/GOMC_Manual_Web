@@ -20,12 +20,12 @@ GOMC supported Monte Carlo moves:
 ---------------------------------
 - Rigid-body displacement
 - Rigid-body rotation
-- Regrowth using coupled-decoupled configurational-bias
-- Crankshaft using coupled-decoupled configurational-bias
-- Intra-box swap using coupled-decoupled configurational-bias
-- Intra-box `molecular exchange Monte Carlo <https://aip.scitation.org/doi/abs/10.1063/1.5025184>`_
-- Inter-box swap using coupled-decoupled configurational-bias
-- Inter-box `molecular exchange monter carlo <https://www.sciencedirect.com/science/article/pii/S0378381218305351>`_ 
+- Regrowth using `coupled-decoupled configurational-bias <https://pubs.acs.org/doi/abs/10.1021/jp984742e>`__
+- Crankshaft using combination of `crankshaft <https://aip.scitation.org/doi/abs/10.1063/1.438608>`_ and `coupled-decoupled configurational-bias <https://pubs.acs.org/doi/abs/10.1021/jp984742e>`__
+- Intra-box swap using `coupled-decoupled configurational-bias <https://pubs.acs.org/doi/abs/10.1021/jp984742e>`__
+- Intra-box `molecular exchange Monte Carlo <https://aip.scitation.org/doi/abs/10.1063/1.5025184>`__
+- Inter-box swap using `coupled-decoupled configurational-bias <https://pubs.acs.org/doi/abs/10.1021/jp984742e>`__
+- Inter-box `molecular exchange monter carlo <https://www.sciencedirect.com/science/article/pii/S0378381218305351>`__ 
 - Volume exchange (both isotropic and anisotropic)
 
 GOMC supported force fields:
@@ -35,3 +35,24 @@ GOMC supported force fields:
 - TraPPE
 - Mie
 - Martini
+
+GOMC supported molecules:
+----------------------------
+- Polar molecules (using Ewald summation)
+- Non-polar molecules (standard LJ and Mie potential) 
+- Linear molecules (using `coupled-decoupled configurational-bias <https://pubs.acs.org/doi/abs/10.1021/jp984742e>`_)
+- Branched molecules (using `coupled-decoupled configurational-bias <https://pubs.acs.org/doi/abs/10.1021/jp984742e>`_)
+- Cyclic molecules (using combination of `coupled-decoupled configurational-bias <https://pubs.acs.org/doi/abs/10.1021/jp984742e>`__ and `crankshaft <https://aip.scitation.org/doi/abs/10.1063/1.3644939>`__ to sample intramolecular degrees of freedom of cyclic molecules)
+
+.. Note:: 
+    - It is important to start the simulation with correct molecular geometry such as correct bond length, angles, and dihedral.
+    - In GOMC if the defined bond length in ``Parameter`` file is different from calculated bond length in ``PDB`` files by more than 0.02 :math:`Å`, you will receive a warning message with detailed information (box, residue id, specified bond length, and calculated bond length)
+
+.. important:: 
+    - Molecular geometry of ``Linear`` and ``Branched`` molecules will be corrected during the simulation by using the Monte Carlo moves that uses coupled-decoupled configurational-bias method, such as ``Regrowth``, ``Intra-box swap``, and ``Inter-box swap``.
+
+.. warning::
+    - Bond length of the ``Cyclic`` molecules that belong to the body of rings will never be changed. Incorrect bond length may result in incorrect simulation results.
+    - To sample the angles and dihedrals of a ``Cyclic`` molecule that belongs to the body of the ring, ``Regrowth`` or ``Crankshaft`` Monte Carlo move must be used.
+    - Any atom or group attached to the body of the ring, will uses coupled-decoupled configurational-bias to sample the molecular geometry.
+    - Flexible ``Cyclic`` molecules with multiple rings (3 or more) that share edges (e.g. tricyclic), are not supported in GOMC. This is due the fact that no ``Crankshaft`` move can alter the angle or dihedral of this atom, without changing the bond length.
