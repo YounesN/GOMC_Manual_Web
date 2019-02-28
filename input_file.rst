@@ -316,8 +316,8 @@ Here's the basic CHARMM contributions that are supported in GOMC:
 .. math::
 
   U_{\texttt{bond}}&=\sum_{\texttt{bonds}} K_b(b-b_0)^2\\
-  U_{\texttt{dihedral}}&=\sum_{\texttt{dihedrals}} K_{\phi} [1+\cos(n\phi - \delta)]\\
   U_{\texttt{angle}}&=\sum_{\texttt{angles}} K_{\theta}(\theta-\theta_0)^2\\
+  U_{\texttt{dihedral}}&=\sum_{\texttt{dihedrals}} K_{\phi} [1+\cos(n\phi - \delta)]\\
   U_{\texttt{LJ}}&=\sum_{\texttt{nonbonded}} \epsilon_{ij}\left[\left(\frac{R_{min_{ij}}}{r_{ij}}\right)^{12}-2\left(\frac{R_{min_{ij}}}{r_{ij}}\right)^6\right]+ \frac{q_i q_j}{\epsilon r_{ij}} \\
 
 As seen above, the following are recognized, read and used:
@@ -367,6 +367,9 @@ BONDS
 
 ("bond stretching") is one key section of the CHARMM-compliant file. Units for the :math:`K_b` variable in this section are in kcal/mol; the :math:`b_0` section (which represents the equilibrium bond length for that kind of pair) is measured in Angstroms.
 
+.. math::
+  U_{\texttt{bond}}&=\sum_{\texttt{bonds}} K_b(b-b_0)^2\\
+
 .. code-block:: text
 
   BONDS
@@ -385,7 +388,12 @@ BONDS
 ANGLES
 ^^^^^^
 
-("bond bending"), where :math:`\theta` and :math:`\theta_0` are commonly measured in degrees and :math:`K_\theta` is measured in kcal/mol/K. These values, in literature, are often expressed in Kelvin (K). To convert Kelvin to kcal/mol/K, multiply by the Boltzmann constant – :math:`K_\theta`, 0.0019872041 kcal/mol. In order to fix the angle, it requires to set a large value for :math:`K_\theta`. By assigning a large value like 9999999999, specified angle will be fixed and energy of that angle will considered to be zero.
+("bond bending"), where :math:`\theta` is the measured bond angle and :math:`\theta_0` is the equilibrium bond angle for that kind of pair, are commonly measured in degrees and :math:`K_\theta` is the force constant measured in kcal/mol/K. These values, in literature, are often expressed in Kelvin (K). 
+
+To convert Kelvin to kcal/mol/K, multiply by the Boltzmann constant – :math:`K_\theta`, 0.0019872041 kcal/mol. In order to fix the angle, it requires to set a large value for :math:`K_\theta`. By assigning a large value like 9999999999, specified angle will be fixed and energy of that angle will considered to be zero.
+
+.. math::
+  U_{\texttt{angle}}&=\sum_{\texttt{angles}} K_{\theta}(\theta-\theta_0)^2\\
 
 Here is an example of what is necessary for isobutane:
 
@@ -411,7 +419,11 @@ Some CHARMM ANGLES section entries include ``Urey-Bradley`` potentials (:math:`K
 DIHEDRALS
 ^^^^^^^^^
 
-The final major bonded interactions section of the CHARMM compliant parameter file are the DIHEDRALS. Each dihedral is composed of a dihedral series of 1 or more terms. Often, there are 4 to 6 terms in a dihedral. Angles for the dihedrals' deltas are given in degrees.
+The final major bonded interactions section of the CHARMM compliant parameter file are the DIHEDRALS. Dihedral energies were represented by a cosine series where :math:`\phi` is the dihedral angle, :math:`C_n` are dihedral force constants, :math:`n` is the multiplicity, and :math:`\delta_n` is the phase shift.
+Often, there are 4 to 6 terms in a dihedral. Angles for the dihedrals' deltas are given in degrees.
+
+.. math::
+  U_{\texttt{dihedral}}&= C_0 + \sum_{\texttt{n = 1}} C_n [1+\cos(n\phi_i - \delta_n)]\\
 
 Since isobutane has no dihedral, here are the parameters pertaining to 2,3-dimethylbutane:
 
@@ -443,7 +455,14 @@ Energy parameters used to describe out-of-plane rocking are currently read, but 
 NONBONDED
 ^^^^^^^^^
 
-The next section of the CHARMM style parameter file is the NONBONDED. In order to use TraPPE this section of the CHARMM compliant file is critical. Here's an example with our isobutane potential model:
+The next section of the CHARMM style parameter file is the NONBONDED. The nonbonded energy in CHARMM is presented as 12-6 potential
+where, :math:`r_{ij}`, :math:`\epsilon_{ij}`, :math:`{R_{min}}_{ij}` are the separation, potential well, and potential well-depth, respectively.
+In order to use TraPPE this section of the CHARMM compliant file is critical.
+
+.. math::
+  U_{\texttt{LJ}}&=\sum_{\texttt{nonbonded}} \epsilon_{ij}\left[\left(\frac{R_{min_{ij}}}{r_{ij}}\right)^{12}-2\left(\frac{R_{min_{ij}}}{r_{ij}}\right)^6\right] \\
+
+Here's an example with our isobutane potential model:
 
 .. code-block:: text
 
@@ -479,7 +498,19 @@ The last section of the CHARMM style parameter file is the NBFIX. In this sectio
 Exotic or Mie Parameter File
 ----------------------------
 
-The Mie file is intended for use with nonstandard/specialty models of molecular interaction, which are not included in CHARMM standard. Currently, two custom interaction are included:
+The Mie file is intended for use with nonstandard/specialty models of molecular interaction, which are not included in CHARMM standard. 
+
+.. math:: 
+
+  E_{ij} = C_{n_{ij}} \epsilon_{ij} \bigg[\bigg(\frac{\sigma_{ij}}{r_{ij}}\bigg)^{n_{ij}} - \bigg(\frac{\sigma_{ij}}{r_{ij}}\bigg)^6\bigg]
+
+where :math:`r_{ij}`, :math:`\epsilon_{ij}`, and :math:`\sigma_{ij}` are, respectively, the separation, well depth, and collision diameter for the pair of interaction sites :math:`i` and :math:`j`. The constant :math:`C_n` is a normalization factor such that the minimum of the potential remains at :math:`−\epsilon_{ij}` for all :math:`n_{ij}`. In the 12-6 potential, :math:`C_n` reduces to the familiar value of 4.
+
+.. math:: 
+  
+  C_{n_{ij}} = \bigg(\frac{n_{ij}}{n_{ij} - 6} \bigg)\bigg(\frac{n_{ij}}{6} \bigg)^{6/(n_{ij} - 6)}
+
+Currently, two custom interaction are included:
 
 - ``NONBODED_MIE`` This section describes n-6 (Lennard-Jones) non-bonded interactions. The Lennard- Jones potential (12-6) is a subset of this potential. Non-bonded parameters are assigned by specifying atom type name followed by minimum energy, atom diameter, and repulsion exponent. In order to modify 1-4 interaction, a second minimum energy, atom diameter, and repulsion exponent need to be defined; otherwise, the same parameters would be considered for 1-4 interaction.
 - ``NBFIX_MIE`` This section allows n-6 (Lennard-Jones) interaction between two pairs of atoms to be modified. This is done by specifying two atoms type names followed by minimum energy, atom diameter, and repulsion exponent. In order to modify 1-4 interaction, a second minimum energy, atom diameter, and repulsion exponent need to be defined.
