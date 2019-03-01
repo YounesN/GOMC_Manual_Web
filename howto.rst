@@ -23,7 +23,7 @@ We encourage to try to go through our workshop materials:
          $ git  clone    https://github.com/GOMC-WSU/Workshop.git --branch master --single-branch
          $ cd   Workshop
 
-    or simply download it from `here <https://github.com/GOMC-WSU/Workshop/tree/master>`__ .
+    or simply download it from `GitHub <https://github.com/GOMC-WSU/Workshop/tree/master>`__ .
 
 -   To try two hours workshop, execute the following command in your terminal to clone the workshop:
 
@@ -32,12 +32,15 @@ We encourage to try to go through our workshop materials:
          $ git  clone    https://github.com/GOMC-WSU/Workshop.git --branch AIChE --single-branch
          $ cd   Workshop
 
-    or simply download it from `here <https://github.com/GOMC-WSU/Workshop/tree/AIChE>`__ .
+    or simply download it from `GitHub <https://github.com/GOMC-WSU/Workshop/tree/AIChE>`__ .
 
 
+
+Restart / Recalculate
+----------------------
 
 Restart the simulation
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 Make sure that in the previous simulation config file, the flag ``RestartFreq`` was activated and the restart PDB file/files (``OutputName``\_BOX_0_restart.pdb) 
 and merged PSF file (``OutputName``\_merged.psf) were printed. 
@@ -102,8 +105,8 @@ Here is the example of starting the NPT-GEMC simulation of dimethyl ether, from 
     OutputName          dimethylether_NPT_GEMC
 
 
-Recalculate the energy of simulation snapshot
----------------------------------------------
+Recalculate the energy 
+^^^^^^^^^^^^^^^^^^^^^^
 
 GOMC is capable of recalculate the energy of previous simulation snapshot, with same or different force field. Simulation snapshot is the printed molecule's 
 coordinates at specific steps, which controls by ``CoordinatesFreq``. First, we need to make sure that in the previous simulation config file, the flag ``CoordinatesFreq`` 
@@ -142,5 +145,88 @@ Here is the example of recalculating energy from previous NVT simulation snapsho
     OutputName          Recalculate
 
 
-Recalculate the energy of simulation snapshot
----------------------------------------------
+
+
+Simulate adsorption
+--------------------
+
+GOMC is capable of simulating gas adsorption in rigid framework using GCMC and NPT-GEMC simulation. In this section, we discuss how to generate PDB and PSF file,
+how to modify the configuration file to simulate adsorption.
+
+
+Build PDB and PSF file
+^^^^^^^^^^^^^^^^^^^^^^
+
+As mensioned before, GOMC can only read PDB and PSF file as input file. If you are using "\*.cif" file for your adsorbant, you need to perform few steps 
+to extend the unit cell and export it as PDB file. There are two ways that you can prepare your adsorption simulation:
+
+
+1.  **Using High Throughput Screening (HTS)**
+
+    GOMC development group created a python code combined with Tcl scripting to automatically generate GOMC input files for adsorption simulation. 
+    In this code, we use CoRE-MOF repository created by `Snurr et al. <https://pubs.acs.org/doi/abs/10.1021/cm502594j>`__ to prepare the simulation input file.
+
+    To try this code, execute the following command in your terminal to clone the HTS repository:
+
+    .. code-block:: bash
+
+         $ git  clone    https://github.com/GOMC-WSU/Workshop.git --branch HTS --single-branch
+         $ cd   Workshop
+
+    or simply download it from `GitHub <https://github.com/GOMC-WSU/Workshop/tree/HTS>`__ . 
+
+    Make sure that you installed all `GOMC software requirement <https://github.com/GOMC-WSU/Workshop/blob/HTS/GOMC_Software_Requirements.pdb>`__\. Follow the 
+    "Readme.md" for more information.
+
+
+2.  **Manual preparation**
+
+    To illustrate the steps that need to be taken to prepare the PDB and PSF file, we will use an example provided in one of our workshop. Make sure that you 
+    installed all `GOMC software requirement <https://github.com/GOMC-WSU/Workshop/blob/master/GOMC_Requirements.pdf>`__\.
+    
+    To clone the workshop, execute the following command in your terminal to clone the workshop:
+
+    .. code-block:: bash
+
+         $ git  clone    https://github.com/GOMC-WSU/Workshop.git --branch master --single-branch
+
+    or simply download it from `GitHub <https://github.com/GOMC-WSU/Workshop/tree/master>`__ .
+
+    To show how to extend the unit cell of IRMOF-1 and build the PDB and PSF file, change your directory to:
+
+    .. code-block:: bash
+
+         $ cd   Workshop/adsorption/GCMC/argon_IRMOF_1/build/base/.
+
+
+    In this directory, there is a *README.txt* file, which provides detailed information of steps need to be taken. Here we just provide a summary of these steps:
+
+    -   Extend the unit cell of "EDUSIF_clean_min.cif" file using `VESTA <https://jp-minerals.org/vesta/en/download.html>`__\. To learn how to extend the 
+        unit cell and removing bonds, please refere to this `documente <https://github.com/GOMC-WSU/Workshop/blob/master/adsorption/GCMC/argon_IRMOF_1/build/base/VESTA.pdf>`__\.
+
+    -   The easy way to generate PSF file is to treat each atom as a separate molecule kind. Treating each atom as separate molecule kind will make it easy to
+        generate topology file. To modify the "EDUSIF_clean_min.pdb" file, execute the following command to generate the *EDUSIF_clean_min_modified.pdb* file.
+
+    .. code-block:: bash
+
+        vmd -dispdev text < convert_VESTA_PDB.tcl
+
+    -   To generate the PSF file, each molecule kind must be separated and stored in separate pdb file. Then we use VMD to generate the PSF file. 
+        All these process are scripted in "build_EDUSIF_auto.tcl" and we just need to execute the following command to generate the "IRMOF_1_BOX_0.pdb" and
+        "IRMOF_1_BOX_0.psf" files.
+
+    .. code-block:: bash
+
+        vmd -dispdev text < build_EDUSIF_auto.tcl
+
+    -   Last steps to fix the adsorbant atoms in their position. As mensioned in PDB section, setting the ``Beta = 1.00`` value of a molecule in PDB file, will
+        fix that molecule position. This can be done by a text editor but here we use another Tcl scrip to do that. Execute the following command in your terminal
+        to set the ``Beta`` value of all atoms in "IRMOF_1_BOX_0.pdb" to 1.00.
+
+    .. code-block:: bash
+
+        vmd -dispdev text < setBeta.tcl
+
+
+Adsorption in GCMC
+^^^^^^^^^^^^^^^^^^
