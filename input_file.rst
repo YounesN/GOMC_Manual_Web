@@ -14,7 +14,10 @@ GOMC requires only one PDB file for NVT and NPT ensembles. However, GOMC require
 
 What is PDB file
 ^^^^^^^^^^^^^^^^
-The term PDB can refer to the Protein Data Bank (http://www.rcsb.org/pdb/), to a data file provided there, or to any file following the PDB format. Files in the PDB include various information such as the name of the compound, the ATOM and HETATM records containing the coordinates of the molecules, and etc. PDB widely used by NAMD, GROMACS, CHARMM, ACEMD, and Amber. GOMC ignore everything in a PDB file except for the REMARK, CRYST1, ATOM, and END records. An overview of the PDB standard can be found here:
+The term PDB can refer to the Protein Data Bank (http://www.rcsb.org/pdb/), to a data file provided there, or to any file following the PDB format. 
+Files in the PDB include various information such as the name of the compound, the ATOM and HETATM records containing the coordinates of the molecules, and etc. 
+PDB widely used by NAMD, GROMACS, CHARMM, ACEMD, and Amber. GOMC ignore everything in a PDB file except for the REMARK, CRYST1, ATOM, and END records. 
+An overview of the PDB standard can be found here:
 
 http://www.wwpdb.org/documentation/file-format-content/format33/sect2.html#HEADER 
 http://www.wwpdb.org/documentation/file-format-content/format33/sect8.html#CRYST1 
@@ -23,7 +26,8 @@ http://www.wwpdb.org/documentation/file-format-content/format33/sect9.html#ATOM
 PDB contains foure major parts; ``REMARK``, ``CRYST1``, ``ATOM``, and ``END``. Here is the definition of each field and how GOMC is using them to get the information it requires.
 
 - ``REMARK``:
-  This header records present experimental  details, annotations, comments, and information not included in other records (for more information, `click here <http://www.wwpdb.org/documentation/file-format-content/format33/sect2.html#HEADER>`_). 
+  This header records present experimental  details, annotations, comments, and information not included in other records (for more information, 
+  `click here <http://www.wwpdb.org/documentation/file-format-content/format33/sect2.html#HEADER>`_). 
   
   However, GOMC uses this header to print simulation informations.
 
@@ -41,7 +45,8 @@ PDB contains foure major parts; ``REMARK``, ``CRYST1``, ``ATOM``, and ``END``. H
 
 
 - ``ATOM``:
-  The `ATOM <http://www.wwpdb.org/documentation/file-format-content/format33/sect9.html#ATOM>`_ records present the atomic coordinates for standard amino acids and nucleotides. They also present the occupancy and temperature factor for each atom.
+  The `ATOM <http://www.wwpdb.org/documentation/file-format-content/format33/sect9.html#ATOM>`_ records present the atomic coordinates for standard amino acids 
+  and nucleotides. They also present the occupancy and temperature factor for each atom.
 
   - **ATOM**: Record name
   - **serial**: Atom serial number.
@@ -73,12 +78,16 @@ Here are the PDB output of GOMC for the first molecule of isobutane:
 
 The fields seen here in order from left to right are the record type, atom ID, atom name, residue name, residue ID, x, y, and z coordinates, occupancy, temperature factor (called beta), and segment name.
 
-The atom name is "C1" and residue name is "ISB". The PSF file (next section) contains a lookup table of atoms. These contain the atom name from the PDB and the name of the atom kind in the parameter file it corresponds to. As multiple different atom names will all correspond to the same parameter, these can be viewed "atom aliases" of sorts. The chain letter (in this case 'A') is sometimes used when packing a number of PDBs into a single PDB file.
+The atom name is "C1" and residue name is "ISB". The PSF file (next section) contains a lookup table of atoms. These contain the atom name from the PDB and 
+the name of the atom kind in the parameter file it corresponds to. As multiple different atom names will all correspond to the same parameter, 
+these can be viewed "atom aliases" of sorts. The chain letter (in this case 'A') is sometimes used when packing a number of PDBs into a single PDB file.
 
 .. Important::
 
-  - VMD requires a constant number of ATOMs in a multi-frame PDB (multiple records terminated by "END" in a single file). To compensate for this, all atoms from all boxes in the system are written to the output PDBs of this code.
-  - For atoms not currently in a box, the coordinates are set to ``< 0.00, 0.00, 0.00 >``. The occupancy is commonly just set to "1.00" and is left unused by many codes. We recycle this legacy parameter by using it to denote, in our output PDBs, the box a molecule is in (box 0 occupancy=0.00 ; box 1 occupancy=1.00)
+  - VMD requires a constant number of ATOMs in a multi-frame PDB (multiple records terminated by "END" in a single file). To compensate for this, all atoms 
+    from all boxes in the system are written to the output PDBs of this code.
+  - For atoms not currently in a box, the coordinates are set to ``< 0.00, 0.00, 0.00 >``. The occupancy is commonly just set to "1.00" and is left unused by 
+    many codes. We recycle this legacy parameter by using it to denote, in our output PDBs, the box a molecule is in (box 0 occupancy=0.00 ; box 1 occupancy=1.00)
   - The beta value in GOMC code is used to define the mobility of the molecule.
 
     - ``Beta = 0.00``: molecule can move and transfer within and between boxes.
@@ -90,7 +99,8 @@ Generating PDB file
 
 With that overview of the format in mind, the following steps describe how a PDB file is typically built.
 
-1. A single molecule PDB is obtained. In this example, the QM software package Gaussian was used to draw the molecule, which was then edited by hand to adhere to the PDB spec properly. The end result is a PDB for a single molecule:
+1. A single molecule PDB is obtained. In this example, the QM software package Gaussian was used to draw the molecule, which was then edited by hand to adhere 
+   to the PDB spec properly. The end result is a PDB for a single molecule:
 
   .. code-block:: text
 
@@ -137,9 +147,15 @@ GOMC requires only one PSF file for NVT and NPT ensembles. However, GOMC require
 What is PSF file
 ^^^^^^^^^^^^^^^^
 
-Protein structure file (PSF), contains all of the molecule-specific information needed to apply a particular force field to a molecular system. The CHARMM force field is divided into a topology file, which is needed to generate the PSF file, and a parameter file, which supplies specific numerical values for the generic CHARMM potential function. The topology file defines the atom types used in the force field; the atom names, types, bonds, and partial charges of each residue type; and any patches necessary to link or otherwise mutate these basic residues. The parameter file provides a mapping between bonded and nonbonded interactions involving the various combinations of atom types found in the topology file and specific spring constants and similar parameters for all of the bond, angle, dihedral, improper, and van der Waals terms in the CHARMM potential function. PSF file widely used by by NAMD, CHARMM, and X-PLOR.
+Protein structure file (PSF), contains all of the molecule-specific information needed to apply a particular force field to a molecular system. 
+The CHARMM force field is divided into a topology file, which is needed to generate the PSF file, and a parameter file, which supplies specific numerical 
+values for the generic CHARMM potential function. The topology file defines the atom types used in the force field; the atom names, types, bonds, and partial 
+charges of each residue type; and any patches necessary to link or otherwise mutate these basic residues. The parameter file provides a mapping between bonded 
+and nonbonded interactions involving the various combinations of atom types found in the topology file and specific spring constants and similar parameters for 
+all of the bond, angle, dihedral, improper, and van der Waals terms in the CHARMM potential function. PSF file widely used by by NAMD, CHARMM, and X-PLOR.
 
-The PSF file contains six main sections: ``remarks``, ``atoms``, ``bonds``, ``angles``, ``dihedrals``, and ``impropers`` (dihedral force terms used to maintain planarity). Each section starts with a specific header described bellow:
+The PSF file contains six main sections: ``remarks``, ``atoms``, ``bonds``, ``angles``, ``dihedrals``, and ``impropers`` (dihedral force terms used to maintain 
+planarity). Each section starts with a specific header described bellow:
 
 - ``NTITLE``: remarks on the file.
   The following is taken from a PSF file for isobutane:
@@ -768,6 +784,17 @@ Note that some tags, or entries for tags, are only used in certain ensembles (e.
   - Value 2: Double - The distance to truncate the short rage electrostatic energy at.
 
   .. note:: The default value for ``RcutCoulomb`` is the value of ``Rcut``
+
+  .. important::
+    - In Ewald Summation method, at constant ``Tolerance`` and box volume, increasing ``RcutCoulomb`` would result is decreasing reciprocal vector [`Fincham 1993 <https://www.tandfonline.com/doi/abs/10.1080/08927029408022180>`_].
+      Decreasing the reciprocal vector decreases the computation time in long range electrostatic calculation.
+
+    - Increasing the ``RcutCoulomb`` results in increasing the computation time in short range electrostatic calculation.
+
+    - Parallelization of Ewald summation method is done on reciprocal vector loop, rather than molecule loop. 
+      So, in case of running on multiple CPU threads or GPU, it is better to use the lower value for ``RcutCoulomb``, to maximize the parallelization efficiency.
+    
+    - There is an optimum value for ``RcutCoulomb``, where result in maximum effeciency of the method. We encourage to run a short simulation with various ``RcutCoulomb`` to find the optimum value.
 
 
 ``LRC``
