@@ -21,4 +21,5 @@ Welcome to GOMC's documentation!
    putting_all_together
    vdw_energy
    electrostatic
+   howto
    help
