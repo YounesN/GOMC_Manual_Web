@@ -120,7 +120,7 @@ In order to recalculate the energy from previous simulation we need to perform t
 
 3.  Use the dumped merged PSF file to set the ``Structure`` for both boxes.
 
-4. Set the ``RunSteps`` to zero to activare the energy recalculation.
+4.  Set the ``RunSteps`` to zero to activare the energy recalculation.
 
 5.  Use the different ``OutputName`` to avoid overwriting the merged PSF files.
 
@@ -157,7 +157,9 @@ how to modify the configuration file to simulate adsorption.
 Build PDB and PSF file
 ^^^^^^^^^^^^^^^^^^^^^^
 
-As mensioned before, GOMC can only read PDB and PSF file as input file. If you are using "\*.cif" file for your adsorbant, you need to perform few steps 
+Generating PDB and PSF file for reservoir is similar to generating PDB and PSF file for isobutane, explained before. Here, we are focusing on how to generate
+PDB and PSF file for adsorbent.
+As mensioned before, GOMC can only read PDB and PSF file as input file. If you are using "\*.cif" file for your adsorbent, you need to perform few steps 
 to extend the unit cell and export it as PDB file. There are two ways that you can prepare your adsorption simulation:
 
 
@@ -192,25 +194,65 @@ to extend the unit cell and export it as PDB file. There are two ways that you c
 
     or simply download it from `GitHub <https://github.com/GOMC-WSU/Workshop/tree/master>`__ .
 
-    To show how to extend the unit cell of IRMOF-1 and build the PDB and PSF file, change your directory to:
+    To show how to extend the unit cell of IRMOF-1 and build the PDB and PSF files, change your directory to:
 
     .. code-block:: bash
 
          $ cd   Workshop/adsorption/GCMC/argon_IRMOF_1/build/base/.
 
 
-    In this directory, there is a *README.txt* file, which provides detailed information of steps need to be taken. Here we just provide a summary of these steps:
+    In this directory, there is a "README.txt" file, which provides detailed information of steps need to be taken. Here we just provide a summary of these steps:
 
     -   Extend the unit cell of "EDUSIF_clean_min.cif" file using `VESTA <https://jp-minerals.org/vesta/en/download.html>`__\. To learn how to extend the 
-        unit cell and removing bonds, please refere to this `documente <https://github.com/GOMC-WSU/Workshop/blob/master/adsorption/GCMC/argon_IRMOF_1/build/base/VESTA.pdf>`__\.
+        unit cell, removing bonds, and export it as PDB file, please refere to this `documente <https://github.com/GOMC-WSU/Workshop/blob/master/adsorption/GCMC/argon_IRMOF_1/build/base/VESTA.pdf>`__ to generate "EDUSIF_clean_min.pdb" file.
 
-    -   The easy way to generate PSF file is to treat each atom as a separate molecule kind. Treating each atom as separate molecule kind will make it easy to
-        generate topology file. To modify the "EDUSIF_clean_min.pdb" file, execute the following command to generate the *EDUSIF_clean_min_modified.pdb* file.
+        .. note:: Generated PDB file does not provide all necessary information. Further modification must be made.
+
+    -   The easy way to generate PSF file is to treat each atom as a separate molecule kind to avoid defining bonds, angles, and dihedrals. To modify the "EDUSIF_clean_min.pdb" file (set the residue ID, resname, ...), execute the following command to generate the 
+        "EDUSIF_clean_min_modified.pdb" file.
 
     .. code-block:: bash
 
         vmd -dispdev text < convert_VESTA_PDB.tcl
 
+    -   Treating each atom as separate molecule kind will make it easy to generate topology file. Here is an example of topology file where each atom is treated
+        as a separate residue kind:
+
+    .. code-block:: text
+
+        * Topology file for IRMOF-1 (Zn4O(BDC)3)
+        !
+        MASS   1  O     15.999      O  !
+        MASS   2  C     12.011      C  !
+        MASS   3  H      1.008      H  !
+        MASS   4  ZN    65.380      ZN !
+
+        DEFA FIRS none LAST none
+        AUTOGENERATE ANGLES DIHEDRALS
+
+        RESI    C         0.000
+        GROUP
+        ATOM    C   C     0.000
+        PATCHING FIRS NONE LAST NONE
+
+        RESI    H         0.000
+        GROUP
+        ATOM    H   H     0.000
+        PATCHING FIRS NONE LAST NONE
+
+        RESI    O          0.000
+        GROUP
+        ATOM    O   O      0.000
+        PATCHING FIRS NONE LAST NONE
+
+        RESI    Zn         0.000
+        GROUP
+        ATOM    Zn  ZN     0.000
+        PATCHING FIRS NONE LAST NONE
+
+        END
+
+    
     -   To generate the PSF file, each molecule kind must be separated and stored in separate pdb file. Then we use VMD to generate the PSF file. 
         All these process are scripted in "build_EDUSIF_auto.tcl" and we just need to execute the following command to generate the "IRMOF_1_BOX_0.pdb" and
         "IRMOF_1_BOX_0.psf" files.
@@ -219,7 +261,7 @@ to extend the unit cell and export it as PDB file. There are two ways that you c
 
         vmd -dispdev text < build_EDUSIF_auto.tcl
 
-    -   Last steps to fix the adsorbant atoms in their position. As mensioned in PDB section, setting the ``Beta = 1.00`` value of a molecule in PDB file, will
+    -   Last steps to fix the adsorbent atoms in their position. As mensioned in PDB section, setting the ``Beta = 1.00`` value of a molecule in PDB file, will
         fix that molecule position. This can be done by a text editor but here we use another Tcl scrip to do that. Execute the following command in your terminal
         to set the ``Beta`` value of all atoms in "IRMOF_1_BOX_0.pdb" to 1.00.
 
@@ -230,3 +272,68 @@ to extend the unit cell and export it as PDB file. There are two ways that you c
 
 Adsorption in GCMC
 ^^^^^^^^^^^^^^^^^^
+
+To simulation adsorption using GCMC ensemble, we need to perform the following steps to modify the config file:
+
+1.  Use the generated PDB files for adsorbent and adsorbate to set the ``Coordinates``.
+
+2.  Use the generated PSF files for adsorbent and adsorbate to set the ``Structure``.
+
+3.  Calculate the cell basis vectors for each box and set the ``CellBasisVector1,2,3`` for each box.
+
+.. note::   To calculate the cell basis vector with cell length :math:`\boldsymbol{a} , \boldsymbol{b}, \boldsymbol{c}` and cell angle 
+    :math:`\alpha, \beta. \gamma` we use the following equations:
+
+    .. math::
+
+        a_x = \boldsymbol{a}
+
+        a_y = 0.0
+
+        a_z = 0.0
+
+        b_x = \boldsymbol{b} \times cos(\gamma)
+
+        b_y = \boldsymbol{b} \times sin(\gamma)
+
+        c_x = \boldsymbol{c} \times cos(\beta)
+
+        c_y = \boldsymbol{c} \times \frac{ cos(\alpha) - cos(\beta) \times cos(\gamma) } { sin(\gamma) }
+
+        c_z = \boldsymbol{c} \times \sqrt {{sin(\beta)}^2 - { \bigg(\frac{ cos(\alpha) - cos(\beta) \times cos(\gamma) } { sin(\gamma) }} \bigg)^2}
+
+    ``CellBasisVector1`` = :math:`(a_x , a_y, a_z)`
+
+    ``CellBasisVector2`` = :math:`(b_x , b_y, b_z)`
+
+    ``CellBasisVector3`` = :math:`(c_x , c_y, c_z)`
+
+
+4.  Set the ``Fugacity`` for adsorbate and include ``Fugacity`` for adsorbent with arbitrary value (e.g. 0.00).
+
+Here is the example of argon (AR) adsorption at 5 bar in IRMOF-1 using GCMC ensemble:
+
+.. code-block:: text
+
+    ########################################################
+    # Parameters need to be modified
+    ########################################################
+    Coordinates     0   ../build/base/IRMOF_1_BOX_0.pdb
+    Coordinates     1   ../build/reservoir/START_BOX_1.pdb
+
+    Structure       0   ../build/base/IRMOF_1_BOX_0.psf
+    Structure       1   ../build/reservoir/START_BOX_1.psf  
+
+    CellBasisVector1    0   36.8140   0.00     0.00
+    CellBasisVector2    0   18.2583  31.9880   0.00
+    CellBasisVector3    0   18.2712  10.5596  30.1748
+
+    CellBasisVector1    1   40.00     0.00    0.00
+    CellBasisVector2    1    0.00    40.00    0.00
+    CellBasisVector3    1    0.00    00.00   40.00  
+
+    Fugacity    AR      5.0
+    Fugacity    C       0.0
+    Fugacity    H       0.0
+    Fugacity    O       0.0
+    Fugacity    ZN      0.0
