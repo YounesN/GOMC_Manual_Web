@@ -11,14 +11,15 @@
    ```
 4. To build the HTML files execute the following command in your terminal: 
    ```bash
-   $ sphinx-build -b html <sourcedir> <outputdir>
+   $ sphinx-build  -b  html  src  build
    ```
 5. To build PDF first execute the following command in your terminal:
    ```bash
-    $ sphinx-build -b latex <sourcedir> <outputdir>
+    $ sphinx-build  -b latex  src  build
    ```
-   Then change directory to `<outputdir>` and add `\DeclareUnicodeCharacter{2212}{-}` before `\begin{document}` in `GOMC.tex` file:
+   Then change directory to `build` and add `\DeclareUnicodeCharacter{2212}{-}` before `\begin{document}` in `GOMC.tex` file:
    Then run:
    ```bash
+    $ cd build
     $ make
    ```
