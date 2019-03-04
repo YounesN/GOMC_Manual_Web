@@ -284,23 +284,21 @@ To simulation adsorption using GCMC ensemble, we need to perform the following s
 .. note::   To calculate the cell basis vector with cell length :math:`\boldsymbol{a} , \boldsymbol{b}, \boldsymbol{c}` and cell angle 
     :math:`\alpha, \beta. \gamma` we use the following equations:
 
-    .. math::
+    :math:`a_x = \boldsymbol{a}`
 
-        a_x = \boldsymbol{a} 
+    :math:`a_y = 0.0`
 
-        a_y = 0.0
+    :math:`a_z = 0.0`
 
-        a_z = 0.0
+    :math:`b_x = \boldsymbol{b} \times cos(\gamma)`
 
-        b_x = \boldsymbol{b} \times cos(\gamma)
+    :math:`b_y = \boldsymbol{b} \times sin(\gamma)`
 
-        b_y = \boldsymbol{b} \times sin(\gamma)
+    :math:`c_x = \boldsymbol{c} \times cos(\beta)`
 
-        c_x = \boldsymbol{c} \times cos(\beta)
+    :math:`c_y = \boldsymbol{c} \times \frac{ cos(\alpha) - cos(\beta) \times cos(\gamma) } { sin(\gamma) }`
 
-        c_y = \boldsymbol{c} \times \frac{ cos(\alpha) - cos(\beta) \times cos(\gamma) } { sin(\gamma) }
-
-        c_z = \boldsymbol{c} \times \sqrt {{sin(\beta)}^2 - { \bigg(\frac{ cos(\alpha) - cos(\beta) \times cos(\gamma) } { sin(\gamma) }} \bigg)^2}
+    :math:`c_z = \boldsymbol{c} \times \sqrt {{sin(\beta)}^2 - { \bigg(\frac{ cos(\alpha) - cos(\beta) \times cos(\gamma) } { sin(\gamma) }} \bigg)^2}`
 
 
     ``CellBasisVector1`` = :math:`(a_x , a_y, a_z)`
